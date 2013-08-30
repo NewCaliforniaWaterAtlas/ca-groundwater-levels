@@ -14,27 +14,6 @@ var _ = require('underscore')._;
 var request = require('request');
 var async = require('async');
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// utility functions
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-mapApp.addCommas = function(nStr) {
-	nStr += '';
-	x = nStr.split('.');
-	x1 = x[0];
-	tail = x[1];
-	if(tail !== undefined){
-	 tail = tail.substring(0, 2);
-	}
-	x2 = x.length > 1 ? '.' + tail : '';
-	var rgx = /(\d+)(\d{3})/;
-	while (rgx.test(x1)) {
-		x1 = x1.replace(rgx, '$1' + ',' + '$2');
-	}
-	return x1 + x2;
-};
-
-
 /**
  *  Define the sample application.
  */
@@ -206,27 +185,6 @@ self.app.get('/search/all', function(req, res, options){
   },{});
 });
 
-/*
-self.app.get('/search/id', function(req, res, options){
-
-  var regex = {$regex: '^' + req.query.value, $options: 'i'};
-
-  var query = { $and: [ {'kind': 'right'},{'coordinates': {$exists: true}}, {'properties.id': regex}]};
-
-  engine.find_many_by({query: query, options: {'limit': 0}},function(error, results) {
-    if(!results || error) {
-
-      res.send("[]");
-      return;
-    }
-    res.send(results);
-
-  },{});
-});
-*/
-
-
-
 
 //////////////   end get
     };
@@ -251,7 +209,7 @@ self.app.get('/search/id', function(req, res, options){
         //  Start the app on the specific interface (and port).
         self.app.listen(self.port, self.ipaddress, function() {
             console.log('%s: Node server started on %s:%d ...',
-                        Date(Date.now() ), self.ipaddress, self.port);
+              Date(Date.now() ), self.ipaddress, self.port);
         });
     };
 
