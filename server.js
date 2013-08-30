@@ -1,10 +1,6 @@
 #!/bin/env node
+//  OpenShift sample Node application
 
-var mapApp = {};
-mapApp.tally = {};
-mapApp.tally.storage = 0;
-mapApp.tally.diversion = 0;
-  
 var http = require('http');
 var fs      = require('fs');
 var express = require('express');
@@ -22,28 +18,34 @@ var App = function() {
     //  Scope.
     var self = this;
 
+
+    /*  ================================================================  */
+    /*  Helper functions.                                                 */
+    /*  ================================================================  */
+
     /**
      *  Set up server IP address and port # using env variables/defaults.
      */
     self.setupVariables = function() {
         //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_INTERNAL_IP;
-        self.port      = process.env.OPENSHIFT_INTERNAL_PORT || 8080;
+        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
+        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
         if (typeof self.ipaddress === "undefined") {
             //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
             //  allows us to run/test the app locally.
-            console.warn('No OPENSHIFT_INTERNAL_IP var, using 127.0.0.1');
+            console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
             self.ipaddress = "127.0.0.1";
         };
     };
+
 
     /**
      *  Populate the cache.
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': ''};
+            self.zcache = { 'index.html': '' };
         }
 
         //  Local cache for static content.
@@ -109,12 +111,10 @@ var App = function() {
             res.send("<html><body><img src='" + link + "'></body></html>");
         };
 
-
         self.routes['/'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
         };
-
     };
 
 
@@ -124,70 +124,14 @@ var App = function() {
      */
     self.initializeServer = function() {
         self.createRoutes();
-        self.app = module.exports = express.createServer();
-
-
-          self.app.configure(function(){
-            self.app.use(express.bodyParser());
-            self.app.use(express.cookieParser());
-            self.app.use(express.methodOverride());
-            self.app.use(self.app.router);
-            self.app.use(express.static(__dirname + '/public'));
-          });
+        self.app = express.createServer();
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
             self.app.get(r, self.routes[r]);
         }
-
-//////////////  get
-
-/**
- * Search database by passing it a mongo search object.
- */
-self.app.post('/data', function(req, res, options){
-  var blob = req.body;
-
-  if(!blob.options.limit){
-    var limit = {'limit': 0};
-  }
-  else {
-    var limit = blob.options.limit;
-  }
-
-  engine.find_many_by(blob,function(error, results) {
-    if(!results || error) {
-      console.log("agent query error");
-      res.send("[]");
-      return;
-    }
-    res.send(results);
-  },{}, limit);
-});
-
-/** 
- * Search function for typeahead
- */
-self.app.get('/search/all', function(req, res, options){
-
-  var regex = {$regex: req.query.value, $options: 'i'};
-
-  var query = {};
-
-  engine.find_many_by({query: query, options: {'limit': 0}},function(error, results) {
-    if(!results || error) {
-
-      res.send("[]");
-      return;
-    }
-    res.send(results);
-
-  },{});
-});
-
-
-//////////////   end get
     };
+
 
     /**
      *  Initializes the sample application.
@@ -209,11 +153,12 @@ self.app.get('/search/all', function(req, res, options){
         //  Start the app on the specific interface (and port).
         self.app.listen(self.port, self.ipaddress, function() {
             console.log('%s: Node server started on %s:%d ...',
-              Date(Date.now() ), self.ipaddress, self.port);
+                        Date(Date.now() ), self.ipaddress, self.port);
         });
     };
 
-};
+};   /*  Sample Application.  */
+
 
 
 /**
@@ -222,3 +167,4 @@ self.app.get('/search/all', function(req, res, options){
 var zapp = new App();
 zapp.initialize();
 zapp.start();
+
