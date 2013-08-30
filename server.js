@@ -1,49 +1,74 @@
 #!/bin/env node
-//  OpenShift sample Node application
-var express = require('express');
+
+var mapApp = {};
+mapApp.tally = {};
+mapApp.tally.storage = 0;
+mapApp.tally.diversion = 0;
+  
+var http = require('http');
 var fs      = require('fs');
+var express = require('express');
+var EngineProvider = require('./engine').EngineProvider;
+var engine         = new EngineProvider();
+var _ = require('underscore')._;
+var request = require('request');
+var async = require('async');
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// utility functions
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+mapApp.addCommas = function(nStr) {
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	tail = x[1];
+	if(tail !== undefined){
+	 tail = tail.substring(0, 2);
+	}
+	x2 = x.length > 1 ? '.' + tail : '';
+	var rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + ',' + '$2');
+	}
+	return x1 + x2;
+};
 
 
 /**
  *  Define the sample application.
  */
-var SampleApp = function() {
+var App = function() {
 
     //  Scope.
     var self = this;
-
-
-    /*  ================================================================  */
-    /*  Helper functions.                                                 */
-    /*  ================================================================  */
 
     /**
      *  Set up server IP address and port # using env variables/defaults.
      */
     self.setupVariables = function() {
         //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+        self.ipaddress = process.env.OPENSHIFT_INTERNAL_IP;
+        self.port      = process.env.OPENSHIFT_INTERNAL_PORT || 8080;
 
         if (typeof self.ipaddress === "undefined") {
             //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
             //  allows us to run/test the app locally.
-            console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
+            console.warn('No OPENSHIFT_INTERNAL_IP var, using 127.0.0.1');
             self.ipaddress = "127.0.0.1";
         };
     };
-
 
     /**
      *  Populate the cache.
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '' };
+            self.zcache = { 'index.html': ''};
         }
 
         //  Local cache for static content.
-        self.zcache['index.html'] = fs.readFileSync('./index.html');
+        self.zcache['index.html'] = fs.readFileSync('./public/index.html');
     };
 
 
@@ -105,10 +130,12 @@ var SampleApp = function() {
             res.send("<html><body><img src='" + link + "'></body></html>");
         };
 
+
         self.routes['/'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
         };
+
     };
 
 
@@ -118,14 +145,91 @@ var SampleApp = function() {
      */
     self.initializeServer = function() {
         self.createRoutes();
-        self.app = express.createServer();
+        self.app = module.exports = express.createServer();
+
+
+          self.app.configure(function(){
+            self.app.use(express.bodyParser());
+            self.app.use(express.cookieParser());
+            self.app.use(express.methodOverride());
+            self.app.use(self.app.router);
+            self.app.use(express.static(__dirname + '/public'));
+          });
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
             self.app.get(r, self.routes[r]);
         }
-    };
 
+//////////////  get
+
+/**
+ * Search database by passing it a mongo search object.
+ */
+self.app.post('/data', function(req, res, options){
+  var blob = req.body;
+
+  if(!blob.options.limit){
+    var limit = {'limit': 0};
+  }
+  else {
+    var limit = blob.options.limit;
+  }
+
+  engine.find_many_by(blob,function(error, results) {
+    if(!results || error) {
+      console.log("agent query error");
+      res.send("[]");
+      return;
+    }
+    res.send(results);
+  },{}, limit);
+});
+
+/** 
+ * Search function for typeahead
+ */
+self.app.get('/search/all', function(req, res, options){
+
+  var regex = {$regex: req.query.value, $options: 'i'};
+
+  var query = {};
+
+  engine.find_many_by({query: query, options: {'limit': 0}},function(error, results) {
+    if(!results || error) {
+
+      res.send("[]");
+      return;
+    }
+    res.send(results);
+
+  },{});
+});
+
+/*
+self.app.get('/search/id', function(req, res, options){
+
+  var regex = {$regex: '^' + req.query.value, $options: 'i'};
+
+  var query = { $and: [ {'kind': 'right'},{'coordinates': {$exists: true}}, {'properties.id': regex}]};
+
+  engine.find_many_by({query: query, options: {'limit': 0}},function(error, results) {
+    if(!results || error) {
+
+      res.send("[]");
+      return;
+    }
+    res.send(results);
+
+  },{});
+});
+*/
+
+
+
+
+//////////////   end get
+    };
 
     /**
      *  Initializes the sample application.
@@ -151,14 +255,12 @@ var SampleApp = function() {
         });
     };
 
-};   /*  Sample Application.  */
-
+};
 
 
 /**
  *  main():  Main code.
  */
-var zapp = new SampleApp();
+var zapp = new App();
 zapp.initialize();
 zapp.start();
-
