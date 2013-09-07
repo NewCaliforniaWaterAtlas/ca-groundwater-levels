@@ -45,11 +45,12 @@ var App = function() {
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '' };
+            self.zcache = { 'index.html': '', 'data.html': '' };
         }
 
         //  Local cache for static content.
         self.zcache['index.html'] = fs.readFileSync('./public/index.html');
+        self.zcache['data.html'] = fs.readFileSync('./public/data.html');
     };
 
 
@@ -115,6 +116,12 @@ var App = function() {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
         };
+
+        self.routes['/data'] = function(req, res) {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(self.cache_get('data.html') );
+        };
+
     };
 
 
@@ -124,14 +131,26 @@ var App = function() {
      */
     self.initializeServer = function() {
         self.createRoutes();
+//        self.app = module.exports = express.createServer();
+
+        
         self.app = express.createServer();
+
+
+        self.app.configure(function(){
+          self.app.use(express.bodyParser());
+          self.app.use(express.cookieParser());
+          self.app.use(express.methodOverride());
+          self.app.use(self.app.router);
+          self.app.use(express.static(__dirname + '/public'));
+        });
+          
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
             self.app.get(r, self.routes[r]);
         }
     };
-
 
     /**
      *  Initializes the sample application.
