@@ -146,12 +146,17 @@ aside {
   width: 220px;
 }
 
-/* SVG styling */
-path {
-	fill: #CED8B6;
+body {
+  font: 10px sans-serif;
 }
-
-line {
-	stroke: #555;
-	stroke-width: 2px;
+.chart rect {
+  stroke: white;
+  fill: steelblue;
+}
+.chart text {
+  fill: black;
+  text-anchor: end;
+}
+.chart text.white-label {
+  fill: white;
 }

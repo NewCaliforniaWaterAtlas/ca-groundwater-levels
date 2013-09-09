@@ -13,6 +13,12 @@
 
   Create geospatial index: http://docs.mongodb.org/manual/core/geospatial-indexes/
   db.database.ensureIndex( { "geometry.coordinates": "2d" } )
+  db.database.ensureIndex( { "id": 1 } )
+  db.posts.ensureIndex({isodate: 1});
+
+db.database.aggregate( { $group :
+                         { _id : "$id",
+                           average : { $avg : "$properties.gs_to_ws" } } } );
 
 */
 

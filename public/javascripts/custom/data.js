@@ -1,5 +1,5 @@
 
-var path = 'http://localhost:3000/watertable/v1?year=2011&year_end=2013&month=2&month_end=6&day=2&day_end=15&county=Alameda';
+var path = 'http://localhost:3000/watertable/v1?year=2000&year_end=2013&month=2&month_end=6&day=2&day_end=15&county=Alameda';
 
 d3.json(path, function(error, wells) {
 
@@ -9,29 +9,164 @@ d3.json(path, function(error, wells) {
       formatDate = d3.time.format("%B %d, %Y"),
       formatTime = d3.time.format("%I:%M %p");
 
-  // A nest operator, for grouping the flight list.
-  var nestByDate = d3.nest()
-      .key(function(d) { return d3.time.day(d.date); });
+
+  // A nest operator, for grouping the well list.
+  var nestByID = d3.nest()
+      .key(function(d) { return d3.time.day(d.id); });
 
   // A little coercion, since the CSV is untyped.
   wells.forEach(function(d, i) {
     d.index = i;
-    //d.date = parseDate(d.properties.date.toString());
     d.date = new Date(d.properties.year,d.properties.month, d.properties.day,0, 0);
-//    new Date(d.year, 0)
-    console.log(d.date);
     d.gs_to_ws = d.properties.gs_to_ws;
   });
   
-  console.log(wells);
-
   // Create the crossfilter for the relevant dimensions and groups.
-  var flight = crossfilter(wells),
-      all = flight.groupAll(),
-      date = flight.dimension(function(d) { return d.date; }),
+  var well = crossfilter(wells),
+      all = well.groupAll();
+/*
+      date = well.dimension(function(d) { return d.date; }),
       dates = date.group(d3.time.day),
-      distance = flight.dimension(function(d) { return Math.min(1999, d.properties.gs_to_ws); }),
-      distances = distance.group(function(d) { return Math.floor(d / 50) * 50; });
+      distance = well.dimension(function(d) { return Math.min(-1000, d.properties.gs_to_ws); }),
+      distances = distance.group(function(d) { return Math.floor(d / 50) * 50; })
+*/;
+
+
+// http://eng.wealthfront.com/2012/09/explore-your-multivariate-data-with-crossfilter.html
+// Use the crossfilter force.
+var cf = crossfilter(wells);
+
+// Create our dimension by political party.
+var byParty = cf.dimension(function(p) { return p.id; });
+
+var groupByParty = byParty.group();
+groupByParty.top(Infinity).forEach(function(p, i) {
+  console.log(p.key + ": " + p.value);
+});
+
+
+//byParty.filterExact("Whig");
+
+byParty.top(Infinity).forEach(function(p, i) {
+  console.log(p.id + ". " + p.properties.gs_to_ws);
+});
+
+byParty.filterAll();
+
+groupByParty.top(Infinity).forEach(function(p, i) {
+  console.log(p.key + ": " + p.value);
+});
+
+
+
+    var byTookOffice = cf.dimension(function(p) { console.log(p);return p.year; });
+    
+    console.log("Total # of wells: " + byTookOffice.top(Infinity).length);
+    
+    // filter to presidents starting after 1900.
+    byTookOffice.filter([new Date(1900, 1, 1), Infinity]);
+    
+    console.log("# of wells starting after 1970: " + byTookOffice.top(Infinity).length);
+
+
+    groupByParty.top(Infinity).forEach(function(p, i) {
+      console.log(p.key + ": " + p.value);
+    });
+    
+    //byTookOffice.filterAll();
+    
+    function barchart(id, groupByParty) {
+      var woff = 115;
+      var hoff = 0;
+      var w = 400 + woff;
+      var h = 100 + hoff;
+    
+      var parties = groupByParty.top(Infinity);
+    
+      var chart = d3.select(id)
+        .append("svg")
+          .attr("class", "chart")
+          .attr("width", w)
+          .attr("height", h)
+        .append("g")
+          .attr("transform", "translate(" + woff + "," + hoff + ")");
+    
+      var x = d3.scale.linear()
+        .domain([0, d3.max(parties, function(v) { return v.value; })])
+        .range([0, w-woff]);
+    
+      var y = d3.scale.ordinal()
+        .domain(d3.range(parties.length))
+        .rangeBands([0, h-hoff]);
+    
+      var refresh = function() {
+        var bars = chart.selectAll("rect")
+            .data(parties, function(v) { return v.key; });
+    
+        bars.enter().append("rect")
+            .attr("height", y.rangeBand());
+    
+        bars.attr("y", function(d, i) { return i * y.rangeBand(); })
+            .attr("width", function(v) { return x(v.value); });
+    
+        var partyLabels = chart.selectAll(".party-label")
+            .data(parties, function(v) { return v.key; });
+    
+        partyLabels.enter().append("text")
+            .attr("class", "party-label")
+            .attr("x", function(v) { return 0; })
+            .attr("y", function(d, i) { return y(i) + y.rangeBand() / 2; })
+            .attr("dx", -3)
+            .attr("dy", ".35em")
+            .attr("text-anchor", "end")
+            .text(function(v) { return v.key; });
+    
+        var valueLabels = chart.selectAll(".value-label")
+            .data(parties, function(v) { return v.key; });
+    
+        valueLabels.enter().append("text")
+            .attr("class", "value-label")
+            .attr("dy", ".35em")
+            .attr("dx", -3);
+    
+        valueLabels
+            .attr("y", function(d, i) { return y(i) + y.rangeBand() / 2; })
+            .text(function(v) { return v.value; })
+            .attr("x", function(v) { 
+              if (v.value === 0) {
+                return x(1);
+              } else {
+                return x(v.value); 
+              }
+            })
+            .classed("white", function(v) { 
+              return v.value !== 0;
+            });
+    
+      };
+    
+      refresh();
+    
+      return {refresh: refresh};
+    
+    }
+
+
+    var bars = barchart("#chart", groupByParty);
+    
+    $("#slider").change(function(ev) {
+      var year = $(this).val();
+      $("#start-year").text(year);
+
+      byTookOffice.filter([new Date(2000, 1, 1), Infinity]);
+      bars.refresh();
+    });
+
+/*
+
+
+
+
 
   var charts = [
     barChart()
@@ -59,13 +194,14 @@ d3.json(path, function(error, wells) {
       .data(charts)
       .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
 
+
   // Render the initial lists.
   var list = d3.selectAll(".list")
-      .data([flightList]);
+      .data([wellList]);
 
   // Render the total.
   d3.selectAll("#total")
-      .text(formatNumber(flight.size()));
+      .text(formatNumber(well.size()));
 
   renderAll();
 
@@ -100,38 +236,38 @@ d3.json(path, function(error, wells) {
     renderAll();
   };
 
-  function flightList(div) {
-    var wellsByDate = nestByDate.entries(date.top(40));
+  function wellList(div) {
+    var wellsByID = nestByID.entries(date.top(100));
 
     div.each(function() {
-      var date = d3.select(this).selectAll(".date")
-          .data(wellsByDate, function(d) { return d.key; });
+      var date = d3.select(this).selectAll(".id")
+          .data(wellsByID, function(d) { return d.key; });
 
       date.enter().append("div")
-          .attr("class", "date")
+          .attr("class", "id")
         .append("div")
           .attr("class", "day")
           .text(function(d) { return formatDate(d.values[0].date); });
 
       date.exit().remove();
 
-      var flight = date.order().selectAll(".flight")
+      var well = date.order().selectAll(".well")
           .data(function(d) { return d.values; }, function(d) { return d.index; });
 
-      var flightEnter = flight.enter().append("div")
-          .attr("class", "flight");
+      var wellEnter = well.enter().append("div")
+          .attr("class", "well");
 
-      flightEnter.append("div")
+      wellEnter.append("div")
           .attr("class", "time")
           .text(function(d) { return formatTime(d.properties.date); });
 
-      flightEnter.append("div")
+      wellEnter.append("div")
           .attr("class", "distance")
           .text(function(d) { return formatNumber(d.properties.gs_to_ws) + " ft."; });
 
-      flight.exit().remove();
+      well.exit().remove();
 
-      flight.order();
+      well.order();
     });
   }
 
@@ -326,4 +462,5 @@ d3.json(path, function(error, wells) {
 
     return d3.rebind(chart, brush, "on");
   }
+*/
 });
