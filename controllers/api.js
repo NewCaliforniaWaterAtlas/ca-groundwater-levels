@@ -219,53 +219,41 @@ exports.getResults = function(req,res) {
       
       queries.push((function(r){
           return function(callback) {
-
+          
+          query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
  
           // Get results near point.
           if(latitude !== undefined && longitude !== undefined) {
-            query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
-
-            Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) {
-
-            if(results !== undefined) {
-                console.log('results');
-              if(results.results.length > 1) {
-                console.log(results.results.length);
-                datacube.push(results.results);
+              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) {
+  
+              if(results.results !== undefined) {
+                  console.log('results');
+                if(results.results.length > 1) {
+                  console.log(results.results.length);
+                  datacube.push(results.results);
+                }
+                else {
+                  datacube.push(['none']);
+                }
+                callback(); // @TODO is this the closure?
               }
-              else {
-                datacube.push(['none']);
-              }
-              
- //             res.send(new Buffer(results.results));
-              //var json = JSONStream.parse(results.results);
-              //stream.pipe(json);
-              callback(); //@TODO necessary?
-            }
-          });
+            });
           }
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else {
-            console.log(query);
-            Database.find(query).limit(limit).exec(function(err, results) {
 
-            if(results !== undefined) {
-                console.log('results');
-              if(results.results.length > 1) {
-                console.log(results.results.length);
-                datacube.push(results.results);
+            Database.find(query).limit(10).exec(function(err, results) {
+              console.log('results');
+              console.log(results.length);
+              if(results.length > 1) {
+                datacube.push(results);
               }
               else {
                 datacube.push(['none']);
               }
-              
- //             res.send(new Buffer(results.results));
-              //var json = JSONStream.parse(results.results);
-              //stream.pipe(json);
-              callback(); //@TODO necessary?
-            }
-          });
+              callback();
+            });
           }
         }
         })(r));
