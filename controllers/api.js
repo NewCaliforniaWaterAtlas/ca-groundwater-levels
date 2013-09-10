@@ -19,7 +19,7 @@
   http://mongoosejs.com/docs/queries.html
 
 */
-
+var crossfilter = require('crossfilter');
 var moment = require('moment');
 var moment_range = require('moment-range');
 
@@ -152,7 +152,7 @@ exports.getAverageDepth = function(req,res) {
   }
 
 
-  increment = 120;
+  increment = 30;
   latitude = 38.7647;
   longitude = -121.8404;
 
@@ -171,11 +171,22 @@ exports.getAverageDepth = function(req,res) {
   var b = moment(date_end);
 
   for (var m = a; m.isBefore(b); m.add('days', increment)) {
-    increments.push(m.format('M/D/YYYY') );
+
+/*
+    var day = new Date(2011, 9, 16);
+    var dayWrapper = moment(day);
+*/
+    var year = m.format('YYYY');
+    var day = m.format('D');
+    var month = m.format('M');
+    
+    date = new Date(year, month, day);
+    
+   // date = date.toISOString();
+    increments.push(date);  // new Date(2012, 7, 14)
      // @TODO stagger these.
   }
   // Get results by location.
-console.log(increments);
   // For each date range, get results in that range.
   // Aggregate by id
   // Build average gs_to_ws for that time period
@@ -184,30 +195,64 @@ console.log(increments);
   
   // @TODO the command just doesn't work… upgrade to mongo 2.4?
   
+  // Not working.
   var near =  
   {
-  "$geoNear":{
-    "uniqueDocs":true,
-    "includeLocs":true,
+  $near:{
     "near":[-121.8404,38.7647],
-    "spherical":false,
     "distanceField":"d",
-    "maxDistance":0.09692224622030236,
-    "query":{
-    },
-    "num":3
+    "maxDistance":0.008
   }};
   
+ //http://maxogden.com/replicating-large-datasets-into-html5.html 
+  // ok try this beeotch with crossfilter because geoNear from the aggregate function is totally broken.
+  // but whatever, we can get near results (the results are super fast) -- and then blaze it up with crossfilter.
+  // prob have to redo the incremental averages with crossfilter, but am quite proud of myself for figuring out the syntax to get it from mongo.
+  
+  
 /*
-  var match = { 
-    $match: {'properties.isodate':{ "$gte" : 'ISODate(' + increments[0] + ')', "$lt" : 'ISODate(' + increments[1] + ')' }}
-  };
+         {
+                        $geoNear: {
+                                    near: [40.724, -73.997],
+                                    distanceField: "dist.calculated",
+                                    maxDistance: 0.008,
+                                    query: { type: "public" },
+                                    includeLocs: "dist.location",
+                                    uniqueDocs: true,
+                                    num: 5
+                                  }
+                      }
 */
   
-  var match = {$match: {'$properties.isodate':{$gte: increments[0] } }};
+ 
+  var nearbyCallback = function(err, results) {
+
+
+
+
+
+    var data = crossfilter([results]);
+    var dates = {};
+
+     = data.dimension(function(d) { return d.value })  
+    
+    res.send(data);
+
+    
+    
+  };
+  // Get results near point.
+  Database.collection.geoNear(-121.8404, 38.7647,{}, nearbyCallback);
   
 
-  
+  //http://maxogden.com/replicating-large-datasets-into-html5.html
+ 
+ 
+ 
+  // Works
+  var match = {$match: {'properties.isodate':{"$gte" : increments[0], "$lte": increments[1] }}};
+
+  // Works
   var group = 
   { $group : { 
           _id : "$id", 
@@ -219,14 +264,17 @@ console.log(increments);
         }
   }
 
-  var pipeline = [match];
+  var pipeline = [near/* , match, group */];
   
   var options = {
   };
 
   //Database.
-//  Database.aggregate(pipeline, options, callback);
-  Database.find({'properties.isodate': {"$gte" : new Date(2012, 7, 14)  }}).exec(callback);
+  //Database.aggregate(pipeline, options, callback);
+
+  // Works
+  //query = {'properties.isodate': {"$gte" : increments[0], "$lte": increments[1] }}; 
+  //Database.find(query).exec(callback);
  };
 
 
