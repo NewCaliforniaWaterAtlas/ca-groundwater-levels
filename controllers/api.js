@@ -184,116 +184,100 @@ exports.getResults = function(req,res) {
 
 //----------------
 
-    var queries = [];
+    var queries = []; 
 
-
-    
-    
- for(var r = 0; r < increments.length -1; r++) {   
-  queries.push((function(j){
-    return function(callback) {
-    
-     Database.find({}).limit(10).exec(function(err, results) {
-      console.log('results');
-      console.log(results);
-     if(results.length > 1) {
-        datacube.push(results);
-      }
-      else {
-        datacube.push(['none']);
-      }
-      callback();
-      //res.send(datacube);
-    });
-
-    }
-    })(r));
-  }
-    
-    
-    
 /*
-    for(var r = 0; r < increments.length -1; r++) {
-      queries.push(
-      function(callback) {
+  // Test async query
+  for(var r = 0; r < increments.length -1; r++) {   
+    queries.push((function(j){
+        return function(callback) {
         Database.find({}).limit(10).exec(function(err, results) {
-      console.log('results');
-      console.log(results);
-     if(results.length > 1) {
-        datacube.push(results);
-      }
-      else {
-        datacube.push(['none']);
-      }
-      return true;    
-      //res.send(datacube);
-    });
-      });
-    }
-
-    console.log(queries);
-*/
-
-
-
-
-    async.parallel(queries, function(){
-      // This function executes after all the queries have returned
-      console.log('done');
-      console.log(datacube);
-      res.send(datacube);
-    });
-
-/*     Database.find({}).limit(10).exec(callback); */
-
-
-
-         /*
- Database.find({}).limit(10).exec(
-          function(err, results) {
-              
-              console.log(results);
-              console.log('callback');
-              if(results.length > 0) {
-                datacube.push(results);
-              }
-              else {
-                datacube.push({'no results':0});
-              }
+          console.log('results');
+          console.log(results.length);
+          if(results.length > 1) {
+            datacube.push(results);
           }
-          );
+          else {
+            datacube.push(['none']);
+          }
+          callback();
+        });
+      }
+      })(r));
+  }
 */
+
+    JSONStream = require('JSONStream');
+
 /*
+  json.on('data', function(doc) {
+    // this will get called for each JSON object (available here as 'doc') that JSONStream parses
+  })
+*/
+
+    for(var r = 0; r < increments.length-1; r++) {
+      
+      queries.push((function(r){
+          return function(callback) {
+
+ 
           // Get results near point.
           if(latitude !== undefined && longitude !== undefined) {
-            Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+            query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
+
+            Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) {
+
+            if(results !== undefined) {
+                console.log('results');
+              if(results.results.length > 1) {
+                console.log(results.results.length);
+                datacube.push(results.results);
+              }
+              else {
+                datacube.push(['none']);
+              }
+              
+ //             res.send(new Buffer(results.results));
+              //var json = JSONStream.parse(results.results);
+              //stream.pipe(json);
+              callback(); //@TODO necessary?
+            }
+          });
           }
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else {
             console.log(query);
-            Database.find(query).limit(limit).exec(callback);
-          } 
-*/
+            Database.find(query).limit(limit).exec(function(err, results) {
 
-
-
-
-
-
-
-
-
-
-/*
-
-          function(err, results) {
+            if(results !== undefined) {
+                console.log('results');
+              if(results.results.length > 1) {
+                console.log(results.results.length);
+                datacube.push(results.results);
+              }
+              else {
+                datacube.push(['none']);
+              }
               
- 
+ //             res.send(new Buffer(results.results));
+              //var json = JSONStream.parse(results.results);
+              //stream.pipe(json);
+              callback(); //@TODO necessary?
+            }
+          });
           }
+        }
+        })(r));
+    }
+  
+  
+    async.series(queries, function(){
+      // This function executes after all the queries have returned
+      console.log('done');
+      res.send(datacube);
+    });
 
-      res.send(results);
-*/
 
   }
   else {
