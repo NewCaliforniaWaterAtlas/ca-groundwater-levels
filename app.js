@@ -37,6 +37,10 @@ app.get(apiPath, api.list);
 // http://localhost:3000/watertable/v1/id/375259N1219869W001.json
 app.get(apiPath + '/id/:id.:format?', api.showID);
 
+// http://localhost:3000/watertable/v1/depth?id=375259N1219869W001&year=2013
+
+app.get(apiPath + '/depth?', api.getAverageDepth);
+
 // ??
 app.post(apiPath, api.post);
 

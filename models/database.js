@@ -9,6 +9,8 @@ var databaseSchema = new Schema({
       year: String,
       month: String,
       day: String,
+      county: String,
+      gs_to_ws: Number,
     }
 
 /*
@@ -51,5 +53,6 @@ var databaseSchema = new Schema({
     
     
     }, { collection: 'database' });
+
  
 module.exports = mongoose.model('database', databaseSchema);

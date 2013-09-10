@@ -16,23 +16,20 @@
   db.database.ensureIndex( { "id": 1 } )
   db.posts.ensureIndex({isodate: 1});
 
-db.database.aggregate( { $group :
-                         { _id : "$id",
-                           average : { $avg : "$properties.gs_to_ws" } } } );
+  http://mongoosejs.com/docs/queries.html
 
 */
 
+var moment = require('moment');
+var moment_range = require('moment-range');
+
 var Database = require('../models/database.js');
+//var Depth = require('../models/depth.js');
 var Post = require('../models/post.js');
  
 exports.post = function(req, res) {
     new Database({id: req.body.id}).save();
 }
-
-  
-  /*
-    http://mongoosejs.com/docs/queries.html
-  */
   
 exports.list = function(req, res) {
   var callback = function(err, databases) {
@@ -115,6 +112,7 @@ exports.list = function(req, res) {
     // @TODO Mongo Date, convert date to timestamp
   }
 
+
 /*
   gs_to_ws
   rp_elecation
@@ -126,7 +124,112 @@ exports.list = function(req, res) {
 */
   Database.find(query).limit(100).exec(callback);
 }
+
+
+
+exports.getAverageDepth = function(req,res) {
+  var callback = function(err, databases) {
+    res.send(databases);
+  };
+  
+  var limit = 10;
+
+  var query = {};
+
+  if(req.query.id !== undefined) {
+    _id = req.params.id;
+    query["_id"] = id;
+  }
+
+  if((req.query.latitude !== undefined) && (req.query.longitude !== undefined)) {
+    var latitude = req.params.latitude;
+    var longitude = req.params.longitude; 
+    var lonlat = [longitude, latitude];
+  }
+  
+  if(req.query.increment !== undefined) {
+    var increment = req.params.increment; // Increment is in number of days.
+  }
+
+
+  increment = 120;
+  latitude = 38.7647;
+  longitude = -121.8404;
+
+  moment().format();
+
+  var increments = [];
+
+  date_start = "1/1/2010";
+  date_end = "12/31/2012";
  
+  var datacube = [];
+  // Build increments for date range queries.
+  // @TODO research momentjs
+  
+  var a = moment(date_start);
+  var b = moment(date_end);
+
+  for (var m = a; m.isBefore(b); m.add('days', increment)) {
+    increments.push(m.format('M/D/YYYY') );
+     // @TODO stagger these.
+  }
+  // Get results by location.
+console.log(increments);
+  // For each date range, get results in that range.
+  // Aggregate by id
+  // Build average gs_to_ws for that time period
+  // Add coordinates
+  // Push results to object
+  
+  // @TODO the command just doesn't work… upgrade to mongo 2.4?
+  
+  var near =  
+  {
+  "$geoNear":{
+    "uniqueDocs":true,
+    "includeLocs":true,
+    "near":[-121.8404,38.7647],
+    "spherical":false,
+    "distanceField":"d",
+    "maxDistance":0.09692224622030236,
+    "query":{
+    },
+    "num":3
+  }};
+  
+/*
+  var match = { 
+    $match: {'properties.isodate':{ "$gte" : 'ISODate(' + increments[0] + ')', "$lt" : 'ISODate(' + increments[1] + ')' }}
+  };
+*/
+  
+  var match = {$match: {'$properties.isodate':{$gte: increments[0] } }};
+  
+
+  
+  var group = 
+  { $group : { 
+          _id : "$id", 
+          average : { $avg : "$properties.gs_to_ws" },
+          well : {"$addToSet": {
+              geometry: "$geometry"
+              }
+          }
+        }
+  }
+
+  var pipeline = [match];
+  
+  var options = {
+  };
+
+  //Database.
+//  Database.aggregate(pipeline, options, callback);
+  Database.find({'properties.isodate': {"$gte" : new Date(2012, 7, 14)  }}).exec(callback);
+ };
+
+
 // Load records by id
 exports.showID = (function(req, res) {
     Database.findOne({id: req.params.id}, function(error, database) {
@@ -135,6 +238,7 @@ exports.showID = (function(req, res) {
         });
     })
 });
+
 
 // Load records by year
 exports.showYear = (function(req, res) {
