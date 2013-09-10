@@ -152,7 +152,6 @@ exports.getAverageDepth = function(req,res) {
   if((req.query.latitude !== undefined) && (req.query.longitude !== undefined)) {
     latitude = parseInt(req.query.latitude);
     longitude = parseInt(req.query.longitude); 
-    console.log(latitude + " " + longitude);
   }
   
   if(req.query.increment !== undefined) {
@@ -210,8 +209,7 @@ exports.getAverageDepth = function(req,res) {
   };
       
     // @TODO make data cube by iterating to get multiple sets of results.
-    /*
-$group : { 
+    var group = { 
           _id : "$id", 
           average : { $avg : "$properties.gs_to_ws" },
           well : {"$addToSet": {
@@ -219,26 +217,21 @@ $group : {
               }
           }
         }
-    };  
-*/
+    ;  
   
 
 
   // Get results near point.
-//  if(latitude !== undefined && longitude !== undefined) {
-    Database.collection.geoNear(longitude, latitude, {query: query, num: limit}, callback);
- // }
+  if(latitude !== undefined && longitude !== undefined) {
+    Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+  }
 
 
 
 
   // REFERENCE:
- 
-  // Works
-/*
-
-  
   // Not working.
+/*
   var near =  
   {
   $near:{
@@ -260,18 +253,18 @@ $group : {
           }
         }
   }
-*/
 
-  // var pipeline = [near, match, group];
+   var pipeline = [match, group];
   
-  //var options = {};
+  var options = {};
 
   //Database.
-  //Database.aggregate(pipeline, options, callback);
+  Database.aggregate(pipeline, options, callback);
 
   // Works
   //query = {'properties.isodate': {"$gte" : increments[0], "$lte": increments[1] }}; 
   //Database.find(query).exec(callback);
+*/
 };
 
 
