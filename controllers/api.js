@@ -19,7 +19,7 @@
   http://mongoosejs.com/docs/queries.html
 
 */
-var crossfilter = require('crossfilter');
+
 var moment = require('moment');
 var moment_range = require('moment-range');
 
@@ -106,198 +106,19 @@ exports.list = function(req, res) {
   else {
     date_start = new Date(year_start,month_start,day_start,0,0);
     date_end = new Date(year_end,month_end,day_end,0,0);
-    console.log(date_start)
-    console.log(date_end)  
     query["properties.isodate"] = {$gte: date_start, $lt: date_end};
-    // @TODO Mongo Date, convert date to timestamp
   }
 
-
-/*
-  gs_to_ws
-  rp_elecation
-  reading_ws
-  rp_to_ws
-  gs_elevation
-  reading_ap
-  wse
-*/
-  Database.find(query).limit(100).exec(callback);
+  Database.find(query).exec(callback);
 }
 
-function crossFilterTest() {
-
-var livingThings = crossfilter([
-  // Fact data.
-  { name: "Rusty",  type: "human", legs: 2 },
-  { name: "Alexa",   type: "human", legs: 2 },
-  { name: "Alex",   type: "human", legs: 2 },
-  { name: "Lassie", type: "dog",   legs: 4 },
-  { name: "Spot",   type: "dog",   legs: 4 },
-  { name: "Pollyana",  type: "bird",  legs: 2 },
-  { name: "Polly",  type: "bird",  legs: 2 },
-  { name: "Fiona",  type: "plant", legs: 0 },
-  { name: "Fiona1",  type: "plant", legs: 2 },
-  { name: "Fiona2",  type: "plant", legs: 2 },
-]);
-
-var n = livingThings.groupAll().reduceCount().value();
-console.log("There are " + n + " living things in my house.") 
-
-var legs = livingThings.groupAll().reduceSum(function(fact) { return fact.legs; }).value()
-console.log("There are " + legs + " legs in my house.")
-
-// Filter for dogs.
-var typeDimension = livingThings.dimension(function(d) { return d.type; });
-typeDimension.filter("dog")
-
-var n = livingThings.groupAll().reduceCount().value();
-console.log("There are " + n + " dogs in my house.") // 2
-
-var legs = livingThings.groupAll().reduceSum(function(fact) {
-  return fact.legs;
-}).value()
-console.log("There are " + legs + " dog legs in my house.") // 8
-
-// Clear the filter.
-typeDimension.filterAll()
-
-// How many living things of each type are in my house?
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-
-// How many legs of each type are in my house?
-var legMeasure = typeDimension.group().reduceSum(function(fact) { return fact.legs; });
-var a = legMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + " legs in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + " legs in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + " legs in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + " legs in my house.");
-
-// Filter for dogs.
-typeDimension.filter("dog")
-
-// How many living things of each type are in my house?
-// You’d expect this to return 0 for anything other than dogs,
-// but it doesn’t because the following statement ignores any
-// filter applied to typeDimension:
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-
-
-// Filter for dogs.
-var typeFilterDimension = livingThings.dimension(function(fact) { return fact.type; });
-typeFilterDimension.filter("dog")
-
-// Now this returns what you would expect.
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-
-}
-
-
-
-function crossFilterLocalTest(results) {
-
-var livingThings = crossfilter(
-results.results);
-
-var n = livingThings.groupAll().reduceCount().value();
-console.log("There are " + n + " living things in my house.") 
-
-
-var legs = livingThings.groupAll().reduceSum(function(fact) { return fact.obj.properties.gs_to_ws; }).value()
-console.log("There are " + legs + " legs in my house.")
-
-
-/*
-// Filter for dogs.
-var typeDimension = livingThings.dimension(function(d) { return d.type; });
-typeDimension.filter("dog")
-
-var n = livingThings.groupAll().reduceCount().value();
-console.log("There are " + n + " dogs in my house.") // 2
-
-var legs = livingThings.groupAll().reduceSum(function(fact) {
-  return fact.legs;
-}).value()
-console.log("There are " + legs + " dog legs in my house.") // 8
-
-// Clear the filter.
-typeDimension.filterAll()
-
-// How many living things of each type are in my house?
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-
-// How many legs of each type are in my house?
-var legMeasure = typeDimension.group().reduceSum(function(fact) { return fact.legs; });
-var a = legMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + " legs in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + " legs in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + " legs in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + " legs in my house.");
-
-// Filter for dogs.
-typeDimension.filter("dog")
-
-// How many living things of each type are in my house?
-// You’d expect this to return 0 for anything other than dogs,
-// but it doesn’t because the following statement ignores any
-// filter applied to typeDimension:
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-
-
-// Filter for dogs.
-var typeFilterDimension = livingThings.dimension(function(fact) { return fact.type; });
-typeFilterDimension.filter("dog")
-
-// Now this returns what you would expect.
-var countMeasure = typeDimension.group().reduceCount();
-var a = countMeasure.top(4);
-console.log("There are " + a[0].value + " " + a[0].key + "(s) in my house.");
-console.log("There are " + a[1].value + " " + a[1].key + "(s) in my house.");
-console.log("There are " + a[2].value + " " + a[2].key + "(s) in my house.");
-console.log("There are " + a[3].value + " " + a[3].key + "(s) in my house.");
-*/
-
-}
-
-
-
-function buildDateRange(increment){
+function buildDateRange(increment, date_start, date_end){
 
   moment().format(); // @TODO necessary??
 
   var increments = [];
-
-  date_start = "1/1/2010";
-  date_end = "12/31/2012";
  
-  // Build increments for date range queries.
-  // @TODO research momentjs
-  
+  // Build increments for date range queries.  
   var a = moment(date_start);
   var b = moment(date_end);
 
@@ -315,32 +136,63 @@ function buildDateRange(increment){
 
 exports.getAverageDepth = function(req,res) {
 
-  
-  var limit = 10;
-  latitude = 38.7647;
-  longitude = -121.8404;
-  
-  var query = {};
-  
-  var callback = function(err, databases) {
-    res.send(databases);
+  // http://localhost:3000/watertable/v1/depth?latitude=38.7647&longitude=-121.8404?&limit=500&&increment=180&date_start=1/1/2010&date_end=12/31/2012
+
+  var _id, latitude, longitude, increment, date_start, date_end, increments, query, limit;
+
+  var callback = function(err, results) {
+    res.send(results);
   };
   
   if(req.query.id !== undefined) {
-    _id = req.params.id;
-    query["_id"] = id;
+    _id = req.query.id;
+    console.log(_id);
   }
 
   if((req.query.latitude !== undefined) && (req.query.longitude !== undefined)) {
-    var latitude = req.params.latitude;
-    var longitude = req.params.longitude; 
-    var lonlat = [longitude, latitude];
+    latitude = parseInt(req.query.latitude);
+    longitude = parseInt(req.query.longitude); 
+    console.log(latitude + " " + longitude);
   }
   
   if(req.query.increment !== undefined) {
-    var increment = req.params.increment; // Increment is in number of days.
+    increment = parseInt(req.query.increment); // Increment is in number of days.
+    console.log(increment);
+  }
+  else {
+    increment = 365;
   }
 
+  if(req.query.limit !== undefined) {
+    limit = parseInt(req.query.limit); // Increment is in number of days.
+    if(limit >= 500) {
+      limit = 500;
+    }
+  }
+  else {
+    limit = 100;
+  }
+
+  if(req.query.date_start !== undefined) {
+    date_start = req.query.date_start; // Increment is in number of days.
+
+  }
+  else {
+    date_start = 365;//last year
+  }
+
+  if(req.query.date_end !== undefined) {
+    date_end = req.query.date_end; // Increment is in number of days.
+
+  }
+  else {
+    date_end = 365; //now @TODO from momentjs
+  }
+  //  console.log(date_start);
+  //  console.log(date_end);
+
+  increments = buildDateRange(increment, date_start, date_end);
+  //console.log(increments);
 
   // Get results by location.
   // For each date range, get results in that range.
@@ -350,89 +202,51 @@ exports.getAverageDepth = function(req,res) {
   // Push results to object
   
   // @TODO the command just doesn't work… upgrade to mongo 2.4?
+
+  
+  query = {
+    "properties.gs_to_ws": {$ne: "NULL"},
+    "properties.isodate":  {"$gte" : increments[0], "$lte": increments[1] }
+  };
+      
+    // @TODO make data cube by iterating to get multiple sets of results.
+    /*
+$group : { 
+          _id : "$id", 
+          average : { $avg : "$properties.gs_to_ws" },
+          well : {"$addToSet": {
+              geometry: "$geometry"
+              }
+          }
+        }
+    };  
+*/
+  
+
+
+  // Get results near point.
+//  if(latitude !== undefined && longitude !== undefined) {
+    Database.collection.geoNear(longitude, latitude, {query: query, num: limit}, callback);
+ // }
+
+
+
+
+  // REFERENCE:
+ 
+  // Works
+/*
+
   
   // Not working.
   var near =  
   {
   $near:{
-    "near":[-121.8404,38.7647],
+    "near":[longitude,latitude],
     "distanceField":"d",
     "maxDistance":0.008
   }};
   
-  //http://maxogden.com/replicating-large-datasets-into-html5.html 
-  // ok try this beeotch with crossfilter because geoNear from the aggregate function is totally broken.
-  // but whatever, we can get near results (the results are super fast) -- and then blaze it up with crossfilter.
-  // prob have to redo the incremental averages with crossfilter, but am quite proud of myself for figuring out the syntax to get it from mongo.
-  
-  
-/*
-         {
-                        $geoNear: {
-                                    near: [40.724, -73.997],
-                                    distanceField: "dist.calculated",
-                                    maxDistance: 0.008,
-                                    query: { type: "public" },
-                                    includeLocs: "dist.location",
-                                    uniqueDocs: true,
-                                    num: 5
-                                  }
-                      }
-*/
-  
- 
-  var nearbyCallback = function(err, results) {
-    //console.log(results.results);
-   // var data = crossFilterLocalTest(results);
-
-//http://blog.rusty.io/2012/09/17/crossfilter-tutorial/
-
-/*
-    var c = crossfilter(results.results);
-    var all = c.groupAll();
-    var wells = c.group(obj.id);
-    var gs_to_ws = c.dimension(function(x) { return x.obj.properties.gs_to_ws; });
-    console.log(gs_to_ws[0].value);
-*/
-
-
-
-    //var d1 = c.dimension(function(x) { return x[1]; });
-    //var g1 = d1.group();
-//    d0.filterRange([3, 8]);
-
-
-
-    
-/*
-    for (var i = 0; i < filter.length; i++) {
-        console.log(filter[i].obj.properties.gs_to_ws);
-    }
-*/
-    
-//    var increments = buildDateRange(365);
-
-/*
-    for(i = 0; i < increments.length; i++) {
-      dates['date' + i] = dimension.filter(function(d) { return d;}) 
-    }
-*/
-    
-    //console.log(dates);
-    
-    res.send(data);
-
-  };
-
-
-  //http://maxogden.com/replicating-large-datasets-into-html5.html
- 
- 
-  var increments = buildDateRange(30);
-
- 
- 
-  // Works
   var match = {$match: {'properties.isodate':{"$gte" : increments[0], "$lte": increments[1] }}};
 
   // Works
@@ -446,11 +260,11 @@ exports.getAverageDepth = function(req,res) {
           }
         }
   }
+*/
 
-  var pipeline = [near/* , match, group */];
+  // var pipeline = [near, match, group];
   
-  var options = {
-  };
+  //var options = {};
 
   //Database.
   //Database.aggregate(pipeline, options, callback);
@@ -458,25 +272,7 @@ exports.getAverageDepth = function(req,res) {
   // Works
   //query = {'properties.isodate': {"$gte" : increments[0], "$lte": increments[1] }}; 
   //Database.find(query).exec(callback);
-
-
-
-
-
-
-  // Get results near point.
-  Database.collection.geoNear(-121.8404, 38.7647,{query: {"properties.gs_to_ws": {$ne: "NULL"}, 'properties.isodate':{"$gte" : increments[0], "$lte": increments[1] }}, $group : { 
-          _id : "$id", 
-          average : { $avg : "$properties.gs_to_ws" },
-          well : {"$addToSet": {
-              geometry: "$geometry"
-              }
-          }
-        }}, callback);
-  
-
-
- };
+};
 
 
 // Load records by id
