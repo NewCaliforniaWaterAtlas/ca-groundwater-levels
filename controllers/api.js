@@ -21,6 +21,7 @@
 */
 
 var moment = require('moment');
+var async = require('async');
 var moment_range = require('moment-range');
 
 var Database = require('../models/database.js');
@@ -71,12 +72,8 @@ exports.buildDateRange = function (increment, date_start, date_end){
 */
 exports.getResults = function(req,res) {
 
-  var _id, latitude, longitude, increment, date_start, date_end, increments, limit,
+  var _id, latitude, longitude, increment, date_start, date_end, increments, limit, callback,
   query = {};
-
-  var callback = function(err, results) {
-    res.send(results);
-  };
   
   if(req.query.id !== undefined) {
     _id = req.query.id;
@@ -137,14 +134,6 @@ exports.getResults = function(req,res) {
   
     increments = exports.buildDateRange(increment, date_start, date_end);
     console.log(increments);  
-
-    if(increments.length > 1) {
-      query["properties.isodate"] = {"$gte" : increments[0], "$lte": increments[1]};      
-    }
-    else {
-      query["properties.isodate"] = {"$gte" : increments[0]};
-    }
-  
   }
 
   // Ignore records without a depth reading
@@ -166,17 +155,168 @@ exports.getResults = function(req,res) {
 
   // http://localhost:3000/watertable/v1/depth?latitude=38.7647&longitude=-121.8404?&limit=500&&increment=180&date_start=1/1/2010&date_end=12/31/2012&depth=true
 
-  // Get results near point.
-  if(latitude !== undefined && longitude !== undefined) {
-    Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
-  }
-  // Not a geographic search.
-  // http://localhost:3000/watertable/v1/depth?limit=500
-  else {
-    console.log(query);
-    Database.find(query).limit(limit).exec(callback);
-  }  
+  // If multiple date ranges, do multiple callbacks and store result.
+  // http://stackoverflow.com/questions/13221262/handling-asynchronous-database-queries-in-node-js-and-mongodb
+  if(increments.length > 1) {
+    var datacube = [];
+    
+//    query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
 
+
+/*
+    for(var r = 0; r < increments.length - 1; r++) {      // @TODO test upper limit
+
+      // Get results near point.
+      if(latitude !== undefined && longitude !== undefined) {
+        datacube[increments[r] + "_" + increments[r+1]] = Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+      }
+      // Not a geographic search.
+      // http://localhost:3000/watertable/v1/depth?limit=500
+      else {
+        console.log(query);
+        datacube[increments[r] + "_" + increments[r+1]] = Database.find(query).limit(limit).exec(callback);
+      }
+
+      console.log(r);
+    }
+*/
+
+
+//----------------
+
+    var queries = [];
+
+
+    
+    
+ for(var r = 0; r < increments.length -1; r++) {   
+  queries.push((function(j){
+    return function(callback) {
+    
+     Database.find({}).limit(10).exec(function(err, results) {
+      console.log('results');
+      console.log(results);
+     if(results.length > 1) {
+        datacube.push(results);
+      }
+      else {
+        datacube.push(['none']);
+      }
+      callback();
+      //res.send(datacube);
+    });
+
+    }
+    })(r));
+  }
+    
+    
+    
+/*
+    for(var r = 0; r < increments.length -1; r++) {
+      queries.push(
+      function(callback) {
+        Database.find({}).limit(10).exec(function(err, results) {
+      console.log('results');
+      console.log(results);
+     if(results.length > 1) {
+        datacube.push(results);
+      }
+      else {
+        datacube.push(['none']);
+      }
+      return true;    
+      //res.send(datacube);
+    });
+      });
+    }
+
+    console.log(queries);
+*/
+
+
+
+
+    async.parallel(queries, function(){
+      // This function executes after all the queries have returned
+      console.log('done');
+      console.log(datacube);
+      res.send(datacube);
+    });
+
+/*     Database.find({}).limit(10).exec(callback); */
+
+
+
+         /*
+ Database.find({}).limit(10).exec(
+          function(err, results) {
+              
+              console.log(results);
+              console.log('callback');
+              if(results.length > 0) {
+                datacube.push(results);
+              }
+              else {
+                datacube.push({'no results':0});
+              }
+          }
+          );
+*/
+/*
+          // Get results near point.
+          if(latitude !== undefined && longitude !== undefined) {
+            Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+          }
+          // Not a geographic search.
+          // http://localhost:3000/watertable/v1/depth?limit=500
+          else {
+            console.log(query);
+            Database.find(query).limit(limit).exec(callback);
+          } 
+*/
+
+
+
+
+
+
+
+
+
+
+/*
+
+          function(err, results) {
+              
+ 
+          }
+
+      res.send(results);
+*/
+
+  }
+  else {
+
+    callback = function(err, results) {
+      res.send(results);
+    };
+    
+    query["properties.isodate"] = {"$gte" : increments[0]};
+
+    // Get results near point.
+    if(latitude !== undefined && longitude !== undefined) {
+      Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+    }
+    // Not a geographic search.
+    // http://localhost:3000/watertable/v1/depth?limit=500
+    else {
+      console.log(query);
+      Database.find(query).limit(limit).exec(callback);
+    }  
+  }
+  
+  
 
 }
 
