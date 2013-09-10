@@ -32,87 +32,10 @@ exports.post = function(req, res) {
 }
   
 exports.list = function(req, res) {
-  var callback = function(err, databases) {
-    res.send(databases);
-  };
-
-  var query = {};
-
-  var year_start;
-  var month_start = '1';
-  var day_start = '1';
-  var year_end;
-  var month_end = '12'
-  var day_end;
-
-
-  if(req.query.county !== undefined) {
-    query["properties.county"] = req.query.county;
-    // @TODO add lowercase search
-  }
-
-
-  if(req.query.year !== undefined) {
-    year_start = req.query.year;
-    //query["properties.year"] = req.query.year;
-  }
-  
-  if(req.query.month !== undefined) {
-    month_start = req.query.month;
-    //query["properties.month"] = req.query.month;
-  }
-
-  if(req.query.day !== undefined) {
-    day_start = req.query.day;
-    //query["properties.day"] = req.query.day;
-  }
-
-  // If date range, override date behavior
-  if(req.query.year_end !== undefined) {
-    year_end = req.query.year_end;
-  }
-
-  if(req.query.month !== undefined) {
-    month_end = req.query.month_end;
-  }
-
-  if(req.query.day !== undefined) {
-    day_end = req.query.day_end;
-  }
-  else {
-
-    if(month_end !== undefined) {
-      switch(month_end){
-        case 2:
-          day_end = '28'; // @TODO deal with leap years
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-          day_end = '30';
-        default:
-          day_end = '31';          
-      }
-    }
-  }
-  
-  // sample: http://localhost:3000/watertable/v1?year=2011&year_end=2013&month=2&month_end=6&day=2&day_end=15&county=Alameda
-  // http://localhost:3000/watertable/v1?year=2011&year_end=2013&month=2&month_end=6&day=2&day_end=15&county=Alameda&id=375260N1219868W001&zoom=5&latitude=37.5259&longitude=-121.9869
-
-  // If process as date range
-  if(req.query.range == 'false') {
-    // ignore date range default behavior, return all records matching specific month, day or year requests @experimental (?)
-  }
-  else {
-    date_start = new Date(year_start,month_start,day_start,0,0);
-    date_end = new Date(year_end,month_end,day_end,0,0);
-    query["properties.isodate"] = {$gte: date_start, $lt: date_end};
-  }
-
-  Database.find(query).exec(callback);
+  exports.getResults(req,res);
 }
 
-function buildDateRange(increment, date_start, date_end){
+exports.buildDateRange = function (increment, date_start, date_end){
 
   moment().format(); // @TODO necessary??
 
@@ -134,11 +57,22 @@ function buildDateRange(increment, date_start, date_end){
   return increments;
 }
 
-exports.getAverageDepth = function(req,res) {
+/*
+  // Get results by location.
+  // For each date range, get results in that range.
 
-  // http://localhost:3000/watertable/v1/depth?latitude=38.7647&longitude=-121.8404?&limit=500&&increment=180&date_start=1/1/2010&date_end=12/31/2012
+  @TODO build ranges
 
-  var _id, latitude, longitude, increment, date_start, date_end, increments, query, limit;
+  // Do with crossfilter?
+  // Aggregate by id
+  // Build average gs_to_ws for that time period
+  // Push results to object
+  
+*/
+exports.getResults = function(req,res) {
+
+  var _id, latitude, longitude, increment, date_start, date_end, increments, limit,
+  query = {};
 
   var callback = function(err, results) {
     res.send(results);
@@ -149,17 +83,14 @@ exports.getAverageDepth = function(req,res) {
     console.log(_id);
   }
 
+  if(req.query.county !== undefined) {
+    query["properties.county"] = req.query.county;
+    // @TODO add lowercase search .toLower()?
+  }
+
   if((req.query.latitude !== undefined) && (req.query.longitude !== undefined)) {
     latitude = parseInt(req.query.latitude);
     longitude = parseInt(req.query.longitude); 
-  }
-  
-  if(req.query.increment !== undefined) {
-    increment = parseInt(req.query.increment); // Increment is in number of days.
-    console.log(increment);
-  }
-  else {
-    increment = 365;
   }
 
   if(req.query.limit !== undefined) {
@@ -172,41 +103,54 @@ exports.getAverageDepth = function(req,res) {
     limit = 100;
   }
 
-  if(req.query.date_start !== undefined) {
-    date_start = req.query.date_start; // Increment is in number of days.
-
+  if(req.query.range == 'false') {
+    // ignore date range default behavior, return all records matching specific month, day or year requests @experimental (?)
   }
-  else {
-    date_start = 365;//last year
-  }
-
-  if(req.query.date_end !== undefined) {
-    date_end = req.query.date_end; // Increment is in number of days.
-
-  }
-  else {
-    date_end = 365; //now @TODO from momentjs
-  }
-  //  console.log(date_start);
-  //  console.log(date_end);
-
-  increments = buildDateRange(increment, date_start, date_end);
-  //console.log(increments);
-
-  // Get results by location.
-  // For each date range, get results in that range.
-  // Aggregate by id
-  // Build average gs_to_ws for that time period
-  // Add coordinates
-  // Push results to object
+  else {    
+    if(req.query.increment !== undefined) {
+      increment = parseInt(req.query.increment); // Increment is in number of days.
+      console.log(increment);
+    }
+    else {
+      increment = 365;
+    }
   
-  // @TODO the command just doesn't work… upgrade to mongo 2.4?
-
+    if(req.query.date_start !== undefined) {
+      date_start = req.query.date_start; // Increment is in number of days.
   
-  query = {
-    "properties.gs_to_ws": {$ne: "NULL"},
-    "properties.isodate":  {"$gte" : increments[0], "$lte": increments[1] }
-  };
+    }
+    else {
+      date_start_m = moment().subtract('days', 365);
+      date_start = date_start_m.format('M/D/YYYY');//last year
+    }
+  
+    if(req.query.date_end !== undefined) {
+      date_end = req.query.date_end; // Increment is in number of days.
+  
+    }
+    else {
+      date_end_m = moment();
+      date_end = date_end_m.format('M/D/YYYY');
+    }
+    //console.log(date_start);
+    //console.log(date_end);
+  
+    increments = exports.buildDateRange(increment, date_start, date_end);
+    console.log(increments);  
+
+    if(increments.length > 1) {
+      query["properties.isodate"] = {"$gte" : increments[0], "$lte": increments[1]};      
+    }
+    else {
+      query["properties.isodate"] = {"$gte" : increments[0]};
+    }
+  
+  }
+
+  // Ignore records without a depth reading
+  if(req.query.depth !== undefined){
+    query["properties.gs_to_ws"] = {$ne: "NULL"};
+  }
       
     // @TODO make data cube by iterating to get multiple sets of results.
     var group = { 
@@ -220,14 +164,28 @@ exports.getAverageDepth = function(req,res) {
     ;  
   
 
+  // http://localhost:3000/watertable/v1/depth?latitude=38.7647&longitude=-121.8404?&limit=500&&increment=180&date_start=1/1/2010&date_end=12/31/2012&depth=true
 
   // Get results near point.
   if(latitude !== undefined && longitude !== undefined) {
     Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
   }
+  // Not a geographic search.
+  // http://localhost:3000/watertable/v1/depth?limit=500
+  else {
+    console.log(query);
+    Database.find(query).limit(limit).exec(callback);
+  }  
 
 
+}
 
+exports.getAverageDepth = function(req,res) {
+
+  exports.getResults(req,res);
+  
+  
+  // @TODO move all of this to the primary query… (put in a function)
 
   // REFERENCE:
   // Not working.
