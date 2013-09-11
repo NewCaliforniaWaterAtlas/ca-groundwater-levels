@@ -137,9 +137,12 @@ exports.getResults = function(req,res) {
   }
 
   // Ignore records without a depth reading
+  // @TODO THis is broken?
+/*
   if(req.query.depth !== undefined){
     query["properties.gs_to_ws"] = {$ne: "NULL"};
   }
+*/
       
     // @TODO make data cube by iterating to get multiple sets of results.
     var group = { 
@@ -242,10 +245,9 @@ exports.getResults = function(req,res) {
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else {
-
-            Database.find(query).limit(10).exec(function(err, results) {
+          console.log(query);
+            Database.find(query).limit(limit).exec(function(err, results) {
               console.log('results');
-              console.log(results.length);
               if(results.length > 1) {
                 datacube.push(results);
               }

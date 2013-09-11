@@ -1,466 +1,140 @@
+var date_start = '1/1/2011', date_end = '12/31/2012', increment = 365, limit = 50, latitude = 38.7647, longitude = -121.8404;
 
-var path = 'http://localhost:3000/watertable/v1?year=2000&year_end=2013&month=2&month_end=6&day=2&day_end=15&county=Alameda';
+var path = 'http://localhost:3000/watertable/v1/depth?' 
+  /*   + '&latitude=' + latitude  */
+  /*   + '&longitude=' + longitude  */
+    + '&limit=' + limit 
+    + '&increment=' + increment 
+    + '&date_start=' + date_start 
+    + '&date_end=' + date_end 
+  /*   + '&depth=true' */
+ /*    + '&county=' + county; */
 
-d3.json(path, function(error, wells) {
 
-  // Various formatters.
-  var formatNumber = d3.format(",d"),
-      formatChange = d3.format("+,d"),
-      formatDate = d3.time.format("%B %d, %Y"),
-      formatTime = d3.time.format("%I:%M %p");
+var context = cubism.context()
+    .serverDelay(new Date(2012, 4, 2) - Date.now())
+    .step(864e5)
+    .size(1280)
+    .stop();
 
+d3.select("#demo").selectAll(".axis")
+    .data(["top", "bottom"])
+  .enter().append("div")
+    .attr("class", function(d) { return d + " axis"; })
+    .each(function(d) { d3.select(this).call(context.axis().ticks(12).orient(d)); });
 
-  // A nest operator, for grouping the well list.
-  var nestByID = d3.nest()
-      .key(function(d) { return d3.time.day(d.id); });
+d3.select("body").append("div")
+    .attr("class", "rule")
+    .call(context.rule());
 
-  // A little coercion, since the CSV is untyped.
-  wells.forEach(function(d, i) {
-    d.index = i;
-    d.date = new Date(d.properties.year,d.properties.month, d.properties.day,0, 0);
-    d.gs_to_ws = d.properties.gs_to_ws;
-  });
+var nest;
+var row;
+// Load all data.
+d3.json(path, function(rows) {
+  row = rows[0]; // for now just get the first item of the datacube
+  nest  = d3.nest()
+    .key(function(d) { return d.properties.county; })
+    .key(function(d) { return d.id; })
+    .map(row, d3.map); // organize the object by county and well
+    
+    //console.log(nest);
+    for(county in nest) {
+    
+        // Insert County Name.
+        d3.select("body")
+        .data(county)
+        .append("div").text(county);
   
-  // Create the crossfilter for the relevant dimensions and groups.
-  var well = crossfilter(wells),
-      all = well.groupAll();
-/*
-      date = well.dimension(function(d) { return d.date; }),
-      dates = date.group(d3.time.day),
-      distance = well.dimension(function(d) { return Math.min(-1000, d.properties.gs_to_ws); }),
-      distances = distance.group(function(d) { return Math.floor(d / 50) * 50; })
-*/;
+
+        var wellKeys = nest[county].keys(); // Build list of the wells in a county.
+        var wellMap = wellKeys.map(wells); // Map each well in the list of wells by county. Return visualized data for that well over time. Is a list of wells in a county.
 
 
-// http://eng.wealthfront.com/2012/09/explore-your-multivariate-data-with-crossfilter.html
-// Use the crossfilter force.
-var cf = crossfilter(wells);
-
-// Create our dimension by political party.
-var byParty = cf.dimension(function(p) { return p.id; });
-
-var groupByParty = byParty.group();
-groupByParty.top(Infinity).forEach(function(p, i) {
-  console.log(p.key + ": " + p.value);
-});
-
-
-//byParty.filterExact("Whig");
-
-byParty.top(Infinity).forEach(function(p, i) {
-  console.log(p.id + ". " + p.properties.gs_to_ws);
-});
-
-byParty.filterAll();
-
-groupByParty.top(Infinity).forEach(function(p, i) {
-  console.log(p.key + ": " + p.value);
-});
-
-
-
-    var byTookOffice = cf.dimension(function(p) { console.log(p);return p.year; });
-    
-    console.log("Total # of wells: " + byTookOffice.top(Infinity).length);
-    
-    // filter to presidents starting after 1900.
-    byTookOffice.filter([new Date(1900, 1, 1), Infinity]);
-    
-    console.log("# of wells starting after 1970: " + byTookOffice.top(Infinity).length);
-
-
-    groupByParty.top(Infinity).forEach(function(p, i) {
-      console.log(p.key + ": " + p.value);
-    });
-    
-    //byTookOffice.filterAll();
-    
-    function barchart(id, groupByParty) {
-      var woff = 115;
-      var hoff = 0;
-      var w = 400 + woff;
-      var h = 100 + hoff;
-    
-      var parties = groupByParty.top(Infinity);
-    
-      var chart = d3.select(id)
-        .append("svg")
-          .attr("class", "chart")
-          .attr("width", w)
-          .attr("height", h)
-        .append("g")
-          .attr("transform", "translate(" + woff + "," + hoff + ")");
-    
-      var x = d3.scale.linear()
-        .domain([0, d3.max(parties, function(v) { return v.value; })])
-        .range([0, w-woff]);
-    
-      var y = d3.scale.ordinal()
-        .domain(d3.range(parties.length))
-        .rangeBands([0, h-hoff]);
-    
-      var refresh = function() {
-        var bars = chart.selectAll("rect")
-            .data(parties, function(v) { return v.key; });
-    
-        bars.enter().append("rect")
-            .attr("height", y.rangeBand());
-    
-        bars.attr("y", function(d, i) { return i * y.rangeBand(); })
-            .attr("width", function(v) { return x(v.value); });
-    
-        var partyLabels = chart.selectAll(".party-label")
-            .data(parties, function(v) { return v.key; });
-    
-        partyLabels.enter().append("text")
-            .attr("class", "party-label")
-            .attr("x", function(v) { return 0; })
-            .attr("y", function(d, i) { return y(i) + y.rangeBand() / 2; })
-            .attr("dx", -3)
-            .attr("dy", ".35em")
-            .attr("text-anchor", "end")
-            .text(function(v) { return v.key; });
-    
-        var valueLabels = chart.selectAll(".value-label")
-            .data(parties, function(v) { return v.key; });
-    
-        valueLabels.enter().append("text")
-            .attr("class", "value-label")
-            .attr("dy", ".35em")
-            .attr("dx", -3);
-    
-        valueLabels
-            .attr("y", function(d, i) { return y(i) + y.rangeBand() / 2; })
-            .text(function(v) { return v.value; })
-            .attr("x", function(v) { 
-              if (v.value === 0) {
-                return x(1);
-              } else {
-                return x(v.value); 
-              }
-            })
-            .classed("white", function(v) { 
-              return v.value !== 0;
-            });
-    
-      };
-    
-      refresh();
-    
-      return {refresh: refresh};
-    
-    }
-
-
-    var bars = barchart("#chart", groupByParty);
-    
-    $("#slider").change(function(ev) {
-      var year = $(this).val();
-      $("#start-year").text(year);
-
-      byTookOffice.filter([new Date(2000, 1, 1), Infinity]);
-      bars.refresh();
-    });
-
-/*
-
-
-
-
-
-  var charts = [
-    barChart()
-        .dimension(distance)
-        .group(distances)
-      .x(d3.scale.linear()
-        .domain([0, 2000])
-        .rangeRound([0, 10 * 40])),
-
-    barChart()
-        .dimension(date)
-        .group(dates)
-        .round(d3.time.day.round)
-      .x(d3.time.scale()
-        .domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
-        .rangeRound([0, 10 * 90]))
-        .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)])
-
-  ];
-
-  // Given our array of charts, which we assume are in the same order as the
-  // .chart elements in the DOM, bind the charts to the DOM and render them.
-  // We also listen to the chart's brush events to update the display.
-  var chart = d3.selectAll(".chart")
-      .data(charts)
-      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
-
-
-  // Render the initial lists.
-  var list = d3.selectAll(".list")
-      .data([wellList]);
-
-  // Render the total.
-  d3.selectAll("#total")
-      .text(formatNumber(well.size()));
-
-  renderAll();
-
-  // Renders the specified chart or list.
-  function render(method) {
-    d3.select(this).call(method);
-  }
-
-  // Whenever the brush moves, re-rendering everything.
-  function renderAll() {
-    chart.each(render);
-    list.each(render);
-    d3.select("#active").text(formatNumber(all.value()));
-  }
-
-  // Like d3.time.format, but faster.
-  function parseDate(d) {
-    return new Date(2001,
-        d.substring(0, 2) - 1,
-        d.substring(2, 4),
-        d.substring(4, 6),
-        d.substring(6, 8));
-  }
-
-  window.filter = function(filters) {
-    filters.forEach(function(d, i) { charts[i].filter(d); });
-    renderAll();
-  };
-
-  window.reset = function(i) {
-    charts[i].filter(null);
-    renderAll();
-  };
-
-  function wellList(div) {
-    var wellsByID = nestByID.entries(date.top(100));
-
-    div.each(function() {
-      var date = d3.select(this).selectAll(".id")
-          .data(wellsByID, function(d) { return d.key; });
-
-      date.enter().append("div")
-          .attr("class", "id")
-        .append("div")
-          .attr("class", "day")
-          .text(function(d) { return formatDate(d.values[0].date); });
-
-      date.exit().remove();
-
-      var well = date.order().selectAll(".well")
-          .data(function(d) { return d.values; }, function(d) { return d.index; });
-
-      var wellEnter = well.enter().append("div")
-          .attr("class", "well");
-
-      wellEnter.append("div")
-          .attr("class", "time")
-          .text(function(d) { return formatTime(d.properties.date); });
-
-      wellEnter.append("div")
-          .attr("class", "distance")
-          .text(function(d) { return formatNumber(d.properties.gs_to_ws) + " ft."; });
-
-      well.exit().remove();
-
-      well.order();
-    });
-  }
-
-  function barChart() {
-    if (!barChart.id) barChart.id = 0;
-
-    var margin = {top: 10, right: 10, bottom: 20, left: 10},
-        x,
-        y = d3.scale.linear().range([100, 0]),
-        id = barChart.id++,
-        axis = d3.svg.axis().orient("bottom"),
-        brush = d3.svg.brush(),
-        brushDirty,
-        dimension,
-        group,
-        round;
-
-    function chart(div) {
-      var width = x.range()[1],
-          height = y.range()[0];
-
-      y.domain([0, group.top(1)[0].value]);
-
-      div.each(function() {
-        var div = d3.select(this),
-            g = div.select("g");
-
-        // Create the skeletal chart.
-        if (g.empty()) {
-          div.select(".title").append("a")
-              .attr("href", "javascript:reset(" + id + ")")
-              .attr("class", "reset")
-              .text("reset")
-              .style("display", "none");
-
-          g = div.append("svg")
-              .attr("width", width + margin.left + margin.right)
-              .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-          g.append("clipPath")
-              .attr("id", "clip-" + id)
-            .append("rect")
-              .attr("width", width)
-              .attr("height", height);
-
-          g.selectAll(".bar")
-              .data(["background", "foreground"])
-            .enter().append("path")
-              .attr("class", function(d) { return d + " bar"; })
-              .datum(group.all());
-
-          g.selectAll(".foreground.bar")
-              .attr("clip-path", "url(#clip-" + id + ")");
-
-          g.append("g")
-              .attr("class", "axis")
-              .attr("transform", "translate(0," + height + ")")
-              .call(axis);
-
-          // Initialize the brush component with pretty resize handles.
-          var gBrush = g.append("g").attr("class", "brush").call(brush);
-          gBrush.selectAll("rect").attr("height", height);
-          gBrush.selectAll(".resize").append("path").attr("d", resizePath);
-        }
-
-        // Only redraw the brush if set externally.
-        if (brushDirty) {
-          brushDirty = false;
-          g.selectAll(".brush").call(brush);
-          div.select(".title a").style("display", brush.empty() ? "none" : null);
-          if (brush.empty()) {
-            g.selectAll("#clip-" + id + " rect")
-                .attr("x", 0)
-                .attr("width", width);
-          } else {
-            var extent = brush.extent();
-            g.selectAll("#clip-" + id + " rect")
-                .attr("x", x(extent[0]))
-                .attr("width", x(extent[1]) - x(extent[0]));
-          }
-        }
-
-        g.selectAll(".bar").attr("d", barPath);
-      });
-
-      function barPath(groups) {
-        var path = [],
-            i = -1,
-            n = groups.length,
-            d;
-        while (++i < n) {
-          d = groups[i];
-          path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
-        }
-        return path.join("");
-      }
-
-      function resizePath(d) {
-        var e = +(d == "e"),
-            x = e ? 1 : -1,
-            y = height / 3;
-        return "M" + (.5 * x) + "," + y
-            + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
-            + "V" + (2 * y - 6)
-            + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
-            + "Z"
-            + "M" + (2.5 * x) + "," + (y + 8)
-            + "V" + (2 * y - 8)
-            + "M" + (4.5 * x) + "," + (y + 8)
-            + "V" + (2 * y - 8);
+      for(well in nest[county]){
+        d3.select("body")/* .selectAll(".horizon") */
+          .data(wellMap) // Map data by well keys (names of counties)
+          .append("div")
+            .attr("class", "horizon")
+            .call(context.horizon()
+              .format(d3.format("+,.2p")))
       }
     }
 
-    brush.on("brushstart.chart", function() {
-      var div = d3.select(this.parentNode.parentNode.parentNode);
-      div.select(".title a").style("display", null);
-    });
+});
 
-    brush.on("brush.chart", function() {
-      var g = d3.select(this.parentNode),
-          extent = brush.extent();
-      if (round) g.select(".brush")
-          .call(brush.extent(extent = extent.map(round)))
-        .selectAll(".resize")
-          .style("display", null);
-      g.select("#clip-" + id + " rect")
-          .attr("x", x(extent[0]))
-          .attr("width", x(extent[1]) - x(extent[0]));
-      dimension.filterRange(extent);
-    });
 
-    brush.on("brushend.chart", function() {
-      if (brush.empty()) {
-        var div = d3.select(this.parentNode.parentNode.parentNode);
-        div.select(".title a").style("display", "none");
-        div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
-        dimension.filterAll();
-      }
-    });
 
-    chart.margin = function(_) {
-      if (!arguments.length) return margin;
-      margin = _;
-      return chart;
-    };
 
-    chart.x = function(_) {
-      if (!arguments.length) return x;
-      x = _;
-      axis.scale(x);
-      brush.x(x);
-      return chart;
-    };
+context.on("focus", function(i) {
+  d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+});
 
-    chart.y = function(_) {
-      if (!arguments.length) return y;
-      y = _;
-      return chart;
-    };
+function wells(well) {
+  return context.metric(function(start, stop, step, callback) {
+  var values = [1,2,3,4];
 
-    chart.dimension = function(_) {
-      if (!arguments.length) return dimension;
-      dimension = _;
-      return chart;
-    };
+  // convert start & stop to milliseconds
+  start = +start;
+  stop = +stop;
 
-    chart.filter = function(_) {
-      if (_) {
-        brush.extent(_);
-        dimension.filterRange(_);
-      } else {
-        brush.clear();
-        dimension.filterAll();
-      }
-      brushDirty = true;
-      return chart;
-    };
-
-    chart.group = function(_) {
-      if (!arguments.length) return group;
-      group = _;
-      return chart;
-    };
-
-    chart.round = function(_) {
-      if (!arguments.length) return round;
-      round = _;
-      return chart;
-    };
-
-    return d3.rebind(chart, brush, "on");
+  while (start < stop) {
+    start += step;
+    values.push(1);
   }
+
+  callback(null, values);
+  }, well);
+}
+
+function wells2(well) {
+  console.log(well);
+  //var format = d3.time.format("%d-%b-%y");
+  // We want to build a horizon chart for the well data for a particular well in a county. (I think)
+  // …We want to represent well levels over time by county. A simple chart will do.
+  // We have the id of the well. We are iterating through the county list.
+  // We need to plot values by well.
+  // First let's start with the well ID.
+  
+  // Look up the well in the list of wells.
+/*
+      wellData = row.filter(function(d, well) { //console.log(d.id); 
+      console.log(d.id)
+      //row[d]['id'] = well
+      return "test"//d.id = well; 
+      
+      }); 
 */
-});
+
+    return well;
+/*
+  return context.metric(function(start, stop, step, callback) {
+
+      
+
+      wellData = row.filter(function(d, well) { //console.log(d.id); 
+      
+      console.log(row[well]); 
+      return row[well]//d.id = well; 
+      
+      }); 
+      console.log(wellData);
+      rows = wellData.map(function(d) { 
+          return [format.parse(d.properties.date), +d.properties.gs_to_ws]
+                 .filter(function(d) { return d[1]; }).reverse();
+
+          var date = rows[0][0], 
+              compare = rows[limit - 1][1], 
+              value = rows[0][1], 
+              values = [value];
+  
+          rows.forEach(function(d) {
+            while ((date = d3.time.day.offset(date, 1)) < d[0]) values.push(value);
+            values.push(value = (d[1] - compare) / compare);
+          });
+          callback(null, values.slice(-context.size()));
+          });
+          
+
+  }, name);
+*/
+}
