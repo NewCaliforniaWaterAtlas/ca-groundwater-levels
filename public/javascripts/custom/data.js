@@ -1,4 +1,4 @@
-var date_start = '1/1/2011', date_end = '12/31/2012', increment = 365, limit = 50, latitude = 38.7647, longitude = -121.8404;
+var date_start = '1/1/2009', date_end = '12/31/2012', increment = 700, limit = 500, latitude = 38.7647, longitude = -121.8404;
 
 var path = 'http://localhost:3000/watertable/v1/depth?' 
   /*   + '&latitude=' + latitude  */
@@ -12,9 +12,9 @@ var path = 'http://localhost:3000/watertable/v1/depth?'
 
 
 var context = cubism.context()
-    .serverDelay(new Date(2012, 4, 2) - Date.now())
-    .step(864e5)
-    .size(1280)
+    .serverDelay(30 * 1000) // allow 30 seconds of collection lag
+    .step(5 * 60 * 1000) // five minutes per value
+    .size(1920); // fetch 1920 values (1080p)
     .stop();
 
 d3.select("#demo").selectAll(".axis")
@@ -44,11 +44,13 @@ d3.json(path, function(rows) {
       var countyName = countyObject.key;
       
       var wells = countyObject.values;
-      var buildHorizons = [];
+
 
       // Insert County Name.
       d3.select("body")
-        .append("div").text(countyName);
+        .append("div")
+        .attr("class", "county")
+        .text(countyName);
 
         wells.forEach(function(well) {
           // console.log(well);
@@ -56,6 +58,12 @@ d3.json(path, function(rows) {
           var wellReadings = well.values;
           var numberReadings = wells.length;
           var readingsValues = []; // get values to visualize.
+
+          d3.select("body")
+          .append("div")
+          .attr("class", "wellID")
+          .text(wellID);  
+
           for(i in wellReadings) {
             var buildHorizon = context.metric(function(start, stop, step, callback) {
                   /*
@@ -83,17 +91,29 @@ d3.json(path, function(rows) {
                 
                 callback(null, values);
                 }, wellID);
+
+
+
             
-            console.log(buildHorizon);
-            buildHorizons.push(buildHorizons);
+            var output =  wellReadings[i].properties.date + " " + wellReadings[i].properties.gs_to_ws;
+            
+              d3.select("body")
+        .           append("div").text(output);   
+
             
             // Draw horizon.
+/*
             d3.select("body").selectAll(".horizon")
                 .data(buildHorizon)
               .enter().insert("div", ".bottom")
                 .attr("class", "horizon")
               .call(context.horizon()
                 .format(d3.format("+,.2p")));
+*/
+      
+      
+       
+                
        }
         });
 

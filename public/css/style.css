@@ -1,4 +1,14 @@
 
+.county {
+  background-color: green;
+}
+
+.wellID {
+  background-color: silver;
+}
+
+
+
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   margin: 30px auto;
