@@ -32,33 +32,73 @@ var row;
 // Load all data.
 d3.json(path, function(rows) {
   row = rows[0]; // for now just get the first item of the datacube
+  
+  var format = d3.time.format("%m/%d/%Y"); // Match the format of the well record properties.date field.
   nest  = d3.nest()
     .key(function(d) { return d.properties.county; })
     .key(function(d) { return d.id; })
-    .map(row, d3.map); // organize the object by county and well
+    .entries(row); // organize the object by county and well
     
-    //console.log(nest);
-    for(county in nest) {
-    
-        // Insert County Name.
-        d3.select("body")
-        .data(county)
-        .append("div").text(county);
-  
+     for(countyIndex in nest) {
+      var countyObject = nest[countyIndex];
+      var countyName = countyObject.key;
+      
+      var wells = countyObject.values;
+      var buildHorizons = [];
 
-        var wellKeys = nest[county].keys(); // Build list of the wells in a county.
-        var wellMap = wellKeys.map(wells); // Map each well in the list of wells by county. Return visualized data for that well over time. Is a list of wells in a county.
+      // Insert County Name.
+      d3.select("body")
+        .append("div").text(countyName);
 
+        wells.forEach(function(well) {
+          // console.log(well);
+          var wellID = well.key;
+          var wellReadings = well.values;
+          var numberReadings = wells.length;
+          var readingsValues = []; // get values to visualize.
+          for(i in wellReadings) {
+            var buildHorizon = context.metric(function(start, stop, step, callback) {
+                  /*
+                  rows = wellReadings.map(function(d) { 
+                      return [format.parse(reading.properties.date), +reading.properties.gs_to_ws]; })
+                        .filter(function(d) { return d[1]; }).reverse();
+                  var date = rows[0][0], 
+                    compare = rows[4][1], 
+                    value = rows[0][1], 
+                    values = [value];
+                  rows.forEach(function(d) {
+                    while ((date = d3.time.day.offset(date, 1)) < d[0]) values.push(value);
+                    values.push(value = (d[1] - compare) / compare);
+                  });
+                  callback(null, values.slice(-context.size()));
+                  */
+              var values = [1, 35, 124,136,124,135];
+                start = +start;
+                stop = +stop;
+                while (start < stop) {
+                  start += step;
+              
+                  values.push(Math.random());
+                }
+                
+                callback(null, values);
+                }, wellID);
+            
+            console.log(buildHorizon);
+            buildHorizons.push(buildHorizons);
+            
+            // Draw horizon.
+            d3.select("body").selectAll(".horizon")
+                .data(buildHorizon)
+              .enter().insert("div", ".bottom")
+                .attr("class", "horizon")
+              .call(context.horizon()
+                .format(d3.format("+,.2p")));
+       }
+        });
 
-      for(well in nest[county]){
-        d3.select("body")/* .selectAll(".horizon") */
-          .data(wellMap) // Map data by well keys (names of counties)
-          .append("div")
-            .attr("class", "horizon")
-            .call(context.horizon()
-              .format(d3.format("+,.2p")))
-      }
-    }
+     }
+
 
 });
 
@@ -69,72 +109,3 @@ context.on("focus", function(i) {
   d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
 });
 
-function wells(well) {
-  return context.metric(function(start, stop, step, callback) {
-  var values = [1,2,3,4];
-
-  // convert start & stop to milliseconds
-  start = +start;
-  stop = +stop;
-
-  while (start < stop) {
-    start += step;
-    values.push(1);
-  }
-
-  callback(null, values);
-  }, well);
-}
-
-function wells2(well) {
-  console.log(well);
-  //var format = d3.time.format("%d-%b-%y");
-  // We want to build a horizon chart for the well data for a particular well in a county. (I think)
-  // …We want to represent well levels over time by county. A simple chart will do.
-  // We have the id of the well. We are iterating through the county list.
-  // We need to plot values by well.
-  // First let's start with the well ID.
-  
-  // Look up the well in the list of wells.
-/*
-      wellData = row.filter(function(d, well) { //console.log(d.id); 
-      console.log(d.id)
-      //row[d]['id'] = well
-      return "test"//d.id = well; 
-      
-      }); 
-*/
-
-    return well;
-/*
-  return context.metric(function(start, stop, step, callback) {
-
-      
-
-      wellData = row.filter(function(d, well) { //console.log(d.id); 
-      
-      console.log(row[well]); 
-      return row[well]//d.id = well; 
-      
-      }); 
-      console.log(wellData);
-      rows = wellData.map(function(d) { 
-          return [format.parse(d.properties.date), +d.properties.gs_to_ws]
-                 .filter(function(d) { return d[1]; }).reverse();
-
-          var date = rows[0][0], 
-              compare = rows[limit - 1][1], 
-              value = rows[0][1], 
-              values = [value];
-  
-          rows.forEach(function(d) {
-            while ((date = d3.time.day.offset(date, 1)) < d[0]) values.push(value);
-            values.push(value = (d[1] - compare) / compare);
-          });
-          callback(null, values.slice(-context.size()));
-          });
-          
-
-  }, name);
-*/
-}
