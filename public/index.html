@@ -1,1 +1,54 @@
-This is the interactive.
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>New California Water Atlas: California Groundwater Levels</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' /> 
+    <script src="/js/libraries/jquery-1.10.2.min.js"></script>
+    <link href="css/style.css" rel="stylesheet">
+  </head>
+  <body>
+  <div class="ncwa-badge"><a href="http://ca.statewater.org"><img src="images/ncwa-badge-diagonal.png" alt="New California Water Atlas"/></a></div>
+
+  <h1>California Groundwater Levels</h1>
+  <h2>Rising and falling groundwater depth over time.</h2>
+  
+  <ul class="menu">
+    <li><a href="#tour">Tour</a></li>
+    <li><a href="#share">Share</a></li>
+    <li><a href="#print">Print</a></li>
+    <li><a href="#get-data">Get Data</a></li>
+  </ul>
+  
+  <div class="search-box">
+    <label>Search</label> <input type="text" value="" size="30" title="Search" />
+    <label>Date</label> <input /> to <input />
+    <input type="submit" value="GO" />
+    <a href="#reset">Reset</a>
+  </div>
+  <div class="time-slider">
+    <div class="date-start">7-1-2011</div>
+    <div class="increments"></div>
+    <div class="date-end">9-20-2013x</div>
+  </div>
+  
+  <div class="map"></div>
+  <div class="legend">
+    <h3>Well</h3>
+    <img src="images/well-legend.png" alt="O - 42" />
+    <span class="legend-label">Depth to groundwater (in feet)</span>
+    
+    <h3>Water level change (in feet)</h3>
+      <div class="gradation">
+        <div class="square">[ ]</div>
+        <div class="gradation-label">
+          <div class="amount">10</div>
+          <div class="units"> feet higher</div>
+        </div>
+      </div>
+  </div>
+  
+  
+  <div class="disclaimer">This is a prototype - in progress. @CAWaterAtlas - 9.21.2013</div>
+  </body>
+</html>
