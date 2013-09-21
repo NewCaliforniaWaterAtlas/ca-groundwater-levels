@@ -93,7 +93,7 @@ exports.getResults = function(req,res) {
   if(req.query.limit !== undefined) {
     limit = parseInt(req.query.limit); // Increment is in number of days.
     if(limit >= 500) {
-      limit = 500;
+      //limit = 500;
     }
   }
   else {
