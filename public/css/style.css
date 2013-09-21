@@ -1,18 +1,81 @@
+/*
+font-family: 'Questrial', sans-serif;
+font-family: 'Muli', sans-serif;
+font-family: 'Rosario', sans-serif;
+*/
+
 .ncwa-badge {
   position: fixed;
   right: 0;
   top: 0;
   z-index: 1000;
-  width: 143px;
-  height: 143px;
+  width: 173px;
+  height: 173px;
+}
+
+
+body {
+  font-family: 'Questrial', sans-serif;
+  font-size: 16px;
+  margin-top: 0px;
+}
+
+.page-header {
+  padding-bottom: 9px;
+  margin: 0px 0 20px;
+  border-bottom: none;
+}
+
+h1 {
+  font-family: 'Rosario', sans-serif;
+  font-weight: bold;
+  font-size: 1.8em;
+  line-height: 0.5em;
+}
+
+h2 {
+  font-family: 'Questrial', sans-serif;
+  font-size: 1em;
+  line-height: 1em;
+}
+
+h3,h4,h5,h6 {
+  font-family: 'Questrial', sans-serif;
+  font-size: 1em;
+  line-height: 1em;
 }
 
 
 
+body { margin:0; padding:0; }
 
+.legend {
+  width: 
+}
 
+#map { 
+  position: relative;
+  height: 400px;
+}
 
+.basin { 
+  fill: #ddc;
+  stroke: #777;
+  stroke-dasharray: 2,2;
+  stroke-linejoin: round;
+}
 
+.d3-vec { position:absolute; }
+
+path {
+  fill: #666;
+  fill-opacity: .2;
+}
+
+path:hover {
+  fill: brown;
+  fill-opacity: .7;
+}
 
 
 
