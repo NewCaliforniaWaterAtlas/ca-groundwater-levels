@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8">
     <title>New California Water Atlas: California Groundwater Levels</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' /> 
-    <script src="/js/libraries/jquery-1.10.2.min.js"></script>
-    <link href="css/style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="js/libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <link href="js/libraries/bootstrap-datepicker/css/datepicker.css" rel="stylesheet" media="screen" />
+    <link href="css/style.css" rel="stylesheet" />
   </head>
   <body>
   <div class="ncwa-badge"><a href="http://ca.statewater.org"><img src="images/ncwa-badge-diagonal.png" alt="New California Water Atlas"/></a></div>
@@ -21,21 +23,26 @@
   </ul>
   
   <div class="search-box">
-    <label>Search</label> <input type="text" value="" size="30" title="Search" />
-    <label>Date</label> <input /> to <input />
+    <input type="text" value=" " />
     <input type="submit" value="GO" />
     <a href="#reset">Reset</a>
+
+  <div class="dates">
+
+    <input type="text" value="01-01-2012" class="datepicker date-start">
+    <div class="slider-button"><span class="date-slider">7-1-2012</span></div>
+  	<input type="text" value="01-01-2013" class="datepicker date-end">	
+
+    <div class="slider-scale"></div>
   </div>
-  <div class="time-slider">
-    <div class="date-start">7-1-2011</div>
-    <div class="increments"></div>
-    <div class="date-end">9-20-2013x</div>
+
   </div>
+ 
   
   <div class="map"></div>
   <div class="legend">
     <h3>Well</h3>
-    <img src="images/well-legend.png" alt="O - 42" />
+<!--     <img src="images/well-legend.png" alt="O - 42" /> -->
     <span class="legend-label">Depth to groundwater (in feet)</span>
     
     <h3>Water level change (in feet)</h3>
@@ -50,5 +57,13 @@
   
   
   <div class="disclaimer">This is a prototype - in progress. @CAWaterAtlas - 9.21.2013</div>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/libraries/bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/libraries/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+    <script src="js/custom/index.js"></script>
   </body>
 </html>
