@@ -1,0 +1,102 @@
+ <!DOCTYPE html>
+  <Html>
+  <Head>
+  <Meta charset=utf-8 />
+  <Title></Title>
+    <script src='http://api.tiles.mapbox.com/mapbox.js/v0.6.7/mapbox.js'></script>
+    <Link href='http://api.tiles.mapbox.com/mapbox.js/v0.6.7/mapbox.css' rel='stylesheet' />
+    <Style>
+      body { margin:0; padding:0; }
+      #map { position:absolute; top:0; bottom:0; width:100%; }
+    </Style>
+  </Head>
+  <Body>
+  <div id='map'></div>
+
+<script src="/javascripts/libraries/d3/d3.min.js"></script>
+
+<Style>
+  .d3-vec { position:absolute; }
+  path {
+    fill: #666;
+    fill-opacity: .2;
+<!--     stroke: #fff; -->
+<!--     stroke-width: 1.5px; -->
+  }
+
+  path:hover {
+    fill: brown;
+    fill-opacity: .7;
+  }
+</Style>
+
+<script>
+function d3layer() {
+    var f = {}, bounds, feature, collection;
+    var div = d3.select(document.body)
+        .append("div")
+        .attr('class', 'd3-vec'),
+        svg = div.append('svg'),
+        g = svg.append("g");
+
+    f.parent = div.node();
+
+    f.project = function(x) {
+      var point = f.map.locationPoint({ lat: x[1], lon: x[0] });
+      return [point.x, point.y];
+    };
+
+    var first = true;
+    f.draw = function() {
+      first && svg.attr("width", f.map.dimensions.x)
+          .attr("height", f.map.dimensions.y)
+          .style("margin-left", "0px")
+          .style("margin-top", "0px") && (first = false);
+      path = d3.geo.path().projection(f.project).pointRadius(4);
+      feature.attr("d", path);
+    };
+
+    f.data = function(x) {
+        collection = x;
+        bounds = d3.geo.bounds(collection);
+        feature = g.selectAll("path")
+            .data(collection.features)
+            .enter().append("path");
+        return f;
+    };
+
+    f.extent = function() {
+        return new MM.Extent(
+            new MM.Location(bounds[0][1], bounds[0][0]),
+            new MM.Location(bounds[1][1], bounds[1][0]));
+    };
+    return f;
+}
+
+var date_start = '3/1/2013', date_end = '6/1/2013', increment = 60, limit = 1000, latitude = 38.7647, longitude = -121.8404;
+
+var path = 'http://localhost:3000/watertable/v1/depth?'
+    + '&limit=' + limit 
+    + '&increment=' + increment 
+    + '&date_start=' + date_start 
+    + '&date_end=' + date_end 
+
+
+
+mapbox.auto('map', 'examples.map-vyofok3q', function(map) {
+
+  d3.json(path, function(rows) {
+    row = rows[0];
+    console.log(row.length);
+    features = {"type":"FeatureCollection","features":row};
+      l = d3layer().data(features);
+      map.addLayer(l);
+      map.extent(l.extent());
+  });
+
+});
+
+
+</script>
+  </Body>
+  </Html>

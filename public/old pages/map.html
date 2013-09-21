@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Map</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+
+    <script src="/javascripts/libraries/d3/d3.min.js"></script>
+    <script src="/javascripts/libraries/d3.geo.js"></script>
+    <script src="/javascripts/libraries/jquery-1.10.2.min.js"></script>
+    
+  
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <style>
+    #path {
+      stroke: black;
+      stroke-width: 0.25px;
+      fill: #cccccc;
+    }
+    
+    #map1 {
+       width:650px;
+       float: left;
+    }
+    
+    #textbox {
+       width: 550px;
+       float: right;
+    }
+    
+    #text {
+       margin-left: 10px;
+    }
+    
+    #canvas {
+       width: 1200px;
+    }
+    
+    .axis text {
+      font: 10px sans-serif;
+    }
+    
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    
+    .bar {
+      fill: purple;
+      fill-opacity: .65;
+    }
+    
+    .x.axis path {
+      display: none;
+    }
+    
+    .label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }   
+    </style>
+  </head>
+  <body>    
+
+  <div id="canvas">
+    <div id="map1">
+      <script src="/javascripts/custom/mapd3.js"></script>
+    </div>
+  </div>
+  
+  </body>
+</html>
