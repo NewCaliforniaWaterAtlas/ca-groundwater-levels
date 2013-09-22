@@ -13,8 +13,18 @@ body {
   font-family: 'Questrial', sans-serif;
   font-size: 16px;
   margin-top: 0px;
+  color: #0c0c0a;
 }
 
+a {
+  color: #0c0c0a;
+}
+
+a:hover,
+a:active {
+  color:  #a05725;
+  border: 1px #d8a271 dotted;
+}
 .page-header {
   padding-bottom: 9px;
   margin: 0px 0 20px;
@@ -33,17 +43,13 @@ h2 {
   font-size: 1.4em;
   line-height: 1.4em;
   background-color: #dbd7ca;
-  width: 300px;
+  width: 100%;
   padding: 6px;
   margin: 5px 0;
   border-left: solid 3px #a2a18f;
 }
 
-.nav-tabs li {
-
-}
-
-.nav>li>a {
+.nav > li > a {
   font-family: 'Questrial', sans-serif;
   font-size: 1.4em;
   line-height: 1.4em;
@@ -52,6 +58,15 @@ h2 {
   padding: 6px;
   margin: 5px 0;
   border-left: solid 3px #a2a18f;
+  border-radius: 0;
+  color: #0c0c0a;
+}
+
+.nav > li > a:hover {
+  border: none;
+  border-color: none;
+  background-color: #d8a271;
+  border-left: solid 3px #a05725;
 }
 
 h3,h4,h5,h6 {
