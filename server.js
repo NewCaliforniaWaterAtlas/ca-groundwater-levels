@@ -11,7 +11,7 @@ var request = require('request');
 //var engine = new EngineProvider();
 //var _ = require('underscore')._;
 
-//var async = require('async');
+var async = require('async');
 
 /**
  *  Define the sample application.
