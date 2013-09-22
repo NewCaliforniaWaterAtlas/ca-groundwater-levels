@@ -45,12 +45,48 @@ h3,h4,h5,h6 {
   line-height: 1em;
 }
 
+.menu {
+  float: right;
+  margin-right: 100px;
+}
 
+.search {
+  margin: 5px;
+}
+
+.menu li {
+  float: left;
+  list-style: none;
+  margin-right: 10px;
+}
+
+#date-start {
+
+  float: left;
+  width: 150px;
+}
+
+#date-end {
+
+  float: left;
+  width: 150px;
+}
+
+.slider {
+  float: left;
+  width:500px;
+}
 
 body { margin:0; padding:0; }
 
 .legend {
-  width: 
+  width: 250px;
+  height: 220px;
+  position: relative;
+  top: -250px;
+  margin: 0 0 8px 8px;
+  background: #ffffff;
+  z-index: 1000;
 }
 
 #map { 

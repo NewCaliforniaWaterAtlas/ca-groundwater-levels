@@ -15,7 +15,8 @@
 
     <!-- Bootstrap -->
     <link href="js/libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
-    <link href="js/libraries/datepicker/css/datepicker.css" rel="stylesheet" media="screen" />
+    <link href="js/libraries/jquery-ui/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" media="screen" />    
+
     <link href="css/style.css" rel="stylesheet" />
 
     <link href='http://fonts.googleapis.com/css?family=Questrial|Muli:300,400,400italic,300italic|Rosario:400,700,400italic,700italic' rel='stylesheet' type='text/css'>    
@@ -47,16 +48,16 @@
       </div>
    
       <div class="search-box">
-        <input type="text" value=" " />
-        <input type="submit" value="GO" />
-        <a href="#reset">Reset</a>
-    
-        <div class="dates">
-          <input type="text" value="01-01-2012" class="datepicker date-start">
-          <div class="slider-button"><span class="date-slider">7-1-2012</span></div>
-        	<input type="text" value="01-01-2013" class="datepicker date-end">	
-          <div class="slider-scale"></div>
+        <div class="search">
+          <input type="text" value=" " />
+          <input type="submit" value="GO" />
+          <a href="#reset">Reset</a>
         </div>
+    
+        <input type="text" id="datepicker-start" class="date-start" />
+        <div id="slider"></div>
+        <input type="text" id="datepicker-end" class="date-end" />
+
       </div>
      
 
@@ -95,7 +96,7 @@
     <script src="//code.jquery.com/jquery.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/libraries/bootstrap/js/bootstrap.min.js"></script>
-    <script src="js/libraries/datepicker/js/bootstrap-datepicker.js"></script>
+    <script src="js/libraries/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="js/custom/index.js"></script>
 
 <!--
