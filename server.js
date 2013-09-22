@@ -132,7 +132,7 @@ var App = function() {
         // connect to Mongo when the app initializes
 /*         mongoose.connect('mongodb://localhost/watertable'); */
         var credentials = require('./credentials.js');        
-        mongoose.connect('mongodb://' + credentials.mongo_host + ':' + credentials.mongo_port + '/' + credentials.mongo_db);
+        mongoose.connect('mongodb://' + credentials.mongo_user + ':' + credentials.mongo_password + '@' + credentials.mongo_host + ':' + credentials.mongo_port + '/' + credentials.mongo_db);
 
         self.routes['/api/v1'] = api.list;
         self.routes['/api/v1/id/:id.:format?'] = api.showID;
