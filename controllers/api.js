@@ -273,6 +273,8 @@ exports.getResults = function(req,res) {
   else {
 
     callback = function(err, results) {
+    console.log(err);
+      console.log(results);
       res.send(results);
     };
     
@@ -287,6 +289,7 @@ exports.getResults = function(req,res) {
     // http://localhost:3000/watertable/v1/depth?limit=500
     else {
       console.log(query);
+      console.log(Database);
       Database.find(query).limit(limit).exec(callback);
     }  
   }
