@@ -47,12 +47,13 @@ var App = function() {
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '','api-documentation.html': '', 'api-versions.html': ''  };
+            self.zcache = { 'index.html': '','levels.html': '','aquifers.html': '', 'api-versions.html': ''  };
         }
 
         //  Local cache for static content.
         self.zcache['index.html'] = fs.readFileSync('./public/index.html');
-        self.zcache['api-documentation.html'] = fs.readFileSync('./public/api-documentation.html');
+        self.zcache['aquifers.html'] = fs.readFileSync('./public/aquifers.html');
+        self.zcache['levels.html'] = fs.readFileSync('./public/levels.html');
         self.zcache['api-versions.html'] = fs.readFileSync('./public/api-versions.html');
     };
 
@@ -115,14 +116,19 @@ var App = function() {
             res.send("<html><body><img src='" + link + "'></body></html>");
         };
 
+        self.routes['/levels'] = function(req, res) {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(self.cache_get('levels.html') );
+        };
+
+        self.routes['/aquifers'] = function(req, res) {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(self.cache_get('aquifers.html') );
+        };
+
         self.routes['/'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('index.html') );
-        };
-
-        self.routes['/api/v1/doc'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('api-documentation.html') );
         };
 
         // Get all records

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>New California Water Atlas: California Aquifers</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../../assets/ico/favicon.png">
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://api.tiles.mapbox.com/mapbox.js/v1.0.3/mapbox.js"></script>
+    <link href='http://api.tiles.mapbox.com/mapbox.js/v1.0.3/mapbox.css' rel='stylesheet' />
+
+    <!-- Bootstrap -->
+    <link href="js/libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <link href="js/libraries/jquery-ui/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" media="screen" />    
+
+    <link href="css/style.css" rel="stylesheet" />
+
+    <link href='http://fonts.googleapis.com/css?family=Questrial|Muli:300,400,400italic,300italic|Rosario:400,700,400italic,700italic' rel='stylesheet' type='text/css'>    
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  <div class="ncwa-badge"><a href="http://ca.statewater.org"><img src="images/ncwa-badge-diagonal.png" alt="New California Water Atlas"/></a></div>
+
+    <div class="container">
+
+      <div class="page-header">
+
+        <h1>California Groundwater Levels</h1>
+        <h2>Rising and falling groundwater depth over time.</h2>
+       
+       
+        
+        <ul class="menu">
+          <li><a href="#tour">Tour</a></li>
+          <li><a href="#share">Share</a></li>
+          <li><a href="#print">Print</a></li>
+          <li><a href="#get-data">Get Data</a></li>
+        </ul>
+      </div>
+   
+      <div class="search-box">
+        <div class="search">
+          <input type="text" value=" " />
+          <input type="submit" value="GO" />
+          <a href="#reset">Reset</a>
+        </div>
+    
+        <input type="text" id="datepicker-start" class="date-start" />
+        <div id="slider"></div>
+        <input type="text" id="datepicker-end" class="date-end" />
+
+      </div>
+     
+
+      <div id="map"></div>
+
+      <div class="legend">
+        <h3>Well</h3>
+    <!--     <img src="images/well-legend.png" alt="O - 42" /> -->
+        <span class="legend-label">Depth to groundwater (in feet)</span>
+        
+        <h3>Water level change (in feet)</h3>
+          <div class="gradation">
+            <div class="square">[ ]</div>
+            <div class="gradation-label">
+              <div class="amount">10</div>
+              <div class="units"> feet higher</div>
+            </div>
+          </div>
+      </div>
+  
+  
+      <div class="disclaimer">This is a prototype - in progress. @CAWaterAtlas - 9.21.2013</div>
+
+      <div class="footer">
+        <ul>
+          <li><a href="https://github.com/NewCaliforniaWaterAtlas">Github</a></li>
+          <li><a href="http://twitter.com/CAWaterAtlas">Twitter</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/libraries/bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/libraries/jquery-ui/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="js/custom/index.js"></script>
+
+<!--
+    <script type="text/javascript">
+    
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38509245-1']);
+      _gaq.push(['_setDomainName', 'statewater.org']);
+      _gaq.push(['_trackPageview']);
+    
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    
+    </script>
+-->
+
+  </body>
+</html>
