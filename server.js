@@ -12,57 +12,6 @@ var _ = require('underscore')._;
 var request = require('request');
 var async = require('async');
 
-
-
-
-var app = module.exports = express.createServer();
- 
-// connect to Mongo when the app initializes
-mongoose.connect('mongodb://localhost/watertable');
-
-app.configure(function(){
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
- 
-// Set up the RESTful API, handler methods are defined in api.js
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  *  Define the sample application.
  */
@@ -180,6 +129,10 @@ var App = function() {
         // Get all records
         // http://localhost:3000/watertable/v1
         var api = require('./controllers/api.js');
+        // connect to Mongo when the app initializes
+/*         mongoose.connect('mongodb://localhost/watertable'); */
+        mongoose.connect('mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/');
+
         self.routes['/api/v1'] = api.list;
         self.routes['/api/v1/id/:id.:format?'] = api.showID;
         self.routes['/api/v1/depth?'] = api.getAverageDepth;
