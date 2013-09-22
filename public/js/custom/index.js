@@ -28,7 +28,15 @@ d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
 
 
 // load all wells by default -- default date range
+var address = '1400 Tenth St., Sacramento, CA, 95814';
+var latitude = 37.000;
+var longitude = -122.000;
+var date_start = '7/1/2011';
+var date_end = '7/1/2012';
+var interval = 364;
 
+var path = 'http://localhost:8080/api/v1';
+var query = '';
 
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice

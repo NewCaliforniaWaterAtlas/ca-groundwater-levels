@@ -4,11 +4,64 @@
 var http = require('http');
 var fs      = require('fs');
 var express = require('express');
-var EngineProvider = require('./engine').EngineProvider;
-var engine         = new EngineProvider();
+var mongoose = require('mongoose');
+
+//var EngineProvider = require('./engine').EngineProvider;
+//var engine = new EngineProvider();
 var _ = require('underscore')._;
 var request = require('request');
 var async = require('async');
+
+
+
+
+var app = module.exports = express.createServer();
+ 
+// connect to Mongo when the app initializes
+mongoose.connect('mongodb://localhost/watertable');
+
+app.configure(function(){
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+ 
+// Set up the RESTful API, handler methods are defined in api.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  *  Define the sample application.
@@ -119,21 +172,22 @@ var App = function() {
             res.send(self.cache_get('index.html') );
         };
 
-        self.routes['/api/v1'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('api.html') );
-        };
-
-        self.routes['/api'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('api-versions.html') );
-        };
-
         self.routes['/api/v1/doc'] = function(req, res) {
             res.setHeader('Content-Type', 'text/html');
             res.send(self.cache_get('api-documentation.html') );
         };
 
+        // Get all records
+        // http://localhost:3000/watertable/v1
+        var api = require('./controllers/api.js');
+        self.routes['/api/v1'] = api.list;
+        self.routes['/api/v1/id/:id.:format?'] = api.showID;
+        self.routes['/api/v1/depth?'] = api.getAverageDepth;
+
+        self.routes['/api'] = function(req, res) {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(self.cache_get('api-versions.html') );
+        };
     };
 
 
@@ -156,13 +210,24 @@ var App = function() {
           self.app.use(self.app.router);
           self.app.use(express.static(__dirname + '/public'));
         });
-          
+
+
+        self.app.all('*', function(req, res, next) {
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+          res.header('Access-Control-Allow-Headers', 'Content-Type');
+          next();
+        });          
 
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
             self.app.get(r, self.routes[r]);
         }
     };
+
+
+
+
 
     /**
      *  Initializes the sample application.
@@ -188,7 +253,7 @@ var App = function() {
         });
     };
 
-};   /*  Sample Application.  */
+};   /* Application.  */
 
 
 
