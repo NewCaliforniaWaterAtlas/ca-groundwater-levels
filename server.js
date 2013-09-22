@@ -48,12 +48,11 @@ var App = function() {
      */
     self.populateCache = function() {
         if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '', 'api.html': '', 'api-documentation.html': '', 'api-versions.html': ''  };
+            self.zcache = { 'index.html': '','api-documentation.html': '', 'api-versions.html': ''  };
         }
 
         //  Local cache for static content.
         self.zcache['index.html'] = fs.readFileSync('./public/index.html');
-        self.zcache['api.html'] = fs.readFileSync('./public/api.html');
         self.zcache['api-documentation.html'] = fs.readFileSync('./public/api-documentation.html');
         self.zcache['api-versions.html'] = fs.readFileSync('./public/api-versions.html');
     };
@@ -130,6 +129,7 @@ var App = function() {
         // Get all records
         // http://localhost:3000/watertable/v1
         var api = require('./controllers/api.js');
+
         // connect to Mongo when the app initializes
 /*         mongoose.connect('mongodb://localhost/watertable'); */
         var credentials = require('./credentials.js');        
@@ -166,18 +166,17 @@ var App = function() {
           self.app.use(express.static(__dirname + '/public'));
         });
 
+        //  Add handlers for the app (from the routes).
+        for (var r in self.routes) {
+            self.app.get(r, self.routes[r]);
+        }
 
         self.app.all('*', function(req, res, next) {
           res.header('Access-Control-Allow-Origin', '*');
           res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
           res.header('Access-Control-Allow-Headers', 'Content-Type');
           next();
-        });          
-
-        //  Add handlers for the app (from the routes).
-        for (var r in self.routes) {
-            self.app.get(r, self.routes[r]);
-        }
+        });
     };
 
 

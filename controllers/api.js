@@ -276,7 +276,8 @@ exports.getResults = function(req,res) {
       res.send(results);
     };
     
-    query["properties.isodate"] = {"$gte" : increments[0]};
+//    query["properties.isodate"] = {"$gte" : increments[0]};
+    query = {};
 
     // Get results near point.
     if(latitude !== undefined && longitude !== undefined) {
