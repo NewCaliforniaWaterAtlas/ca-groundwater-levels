@@ -5,12 +5,13 @@ var http = require('http');
 var fs      = require('fs');
 var express = require('express');
 var mongoose = require('mongoose');
+var request = require('request');
 
 //var EngineProvider = require('./engine').EngineProvider;
 //var engine = new EngineProvider();
-var _ = require('underscore')._;
-var request = require('request');
-var async = require('async');
+//var _ = require('underscore')._;
+
+//var async = require('async');
 
 /**
  *  Define the sample application.
@@ -132,7 +133,7 @@ var App = function() {
         // connect to Mongo when the app initializes
 /*         mongoose.connect('mongodb://localhost/watertable'); */
         var credentials = require('./credentials.js');        
-        mongoose.connect('mongodb://' + credentials.mongo_host + ':' + credentials.mongo_port + '/');
+        mongoose.connect('mongodb://' + credentials.mongo_host + ':' + credentials.mongo_port + '/' + credentials.mongo_db);
 
         self.routes['/api/v1'] = api.list;
         self.routes['/api/v1/id/:id.:format?'] = api.showID;

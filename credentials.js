@@ -6,7 +6,7 @@ var credentials = {
   mongo_password: 'changeme',
   mongo_host: host,
   mongo_port: port,
-  mongo_db: 'collection',
+  mongo_db: 'watertable',
   mongo_collection: 'database',
 };
 
