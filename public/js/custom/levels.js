@@ -59,7 +59,6 @@ map._initPathRoot()
 /* We simply pick up the SVG from the map object */
 var svg = d3.select("#map").select("svg"),
 
-
 //var svg = d3.select(map.getPanes().overlayPane).append("svg"),
     g = svg.append("g").attr("class", "wells");
 
@@ -69,32 +68,11 @@ var path = d3.geo.path().projection(function project(x) {
     return [point.x, point.y];
   });
 
-/*
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-*/
+var labelPaddingX = 8;
+var labelPaddingY = 12;
 
 /* Load and project/redraw on zoom */
 d3.json(wellsQuery, function(collection) {
-
-
-/*
-svg.append("path")
-    .datum(collection)
-    .attr("d", path)
-    .attr("class", "well");
-
-svg.selectAll(".well")
-    .data(collection)
-  .enter().append("text")
-    .attr("class", "well-label")
-    .attr("transform", function(d) { console.log(d); return "translate(" + projection(d.geometry.coordinates) + ")"; })
-    .attr("dy", ".35em")
-    .text(function(d) { return d.properties.gs_to_ws; });
-*/
-
-
     var feature = g.selectAll("path")
       .data(collection)
       .enter()
@@ -102,7 +80,7 @@ svg.selectAll(".well")
       .attr("d", path)
       .attr("class", "well");
   
-    g.selectAll("text")
+    var featureLabel = g.selectAll("text")
     .data(collection)
     .enter()
     .append("svg:text")
@@ -110,17 +88,23 @@ svg.selectAll(".well")
         return d.properties.gs_to_ws;
     })
     .attr("x", function(d){
-        return path.centroid(d)[0];
+        return path.centroid(d)[0] + labelPaddingX;
     })
     .attr("y", function(d){
-        return  path.centroid(d)[1];
+        return  path.centroid(d)[1] + labelPaddingY;
     })
-    .attr("d", path)
-    .attr("text-anchor","middle")
-    .attr('font-size','6pt');  
+    .attr("class","well-label");
+ 
 
   map.on("viewreset", function reset() {
     feature.attr("d",path)
+   
+    featureLabel.attr("x", function(d){
+        return path.centroid(d)[0] + labelPaddingX;
+    })
+    featureLabel.attr("y", function(d){
+        return  path.centroid(d)[1] + labelPaddingY;
+    })
   })
 });
 
