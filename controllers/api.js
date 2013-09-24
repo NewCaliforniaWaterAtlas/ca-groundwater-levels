@@ -20,42 +20,37 @@
 
 */
 
+
 var moment = require('moment');
 var async = require('async');
 var moment_range = require('moment-range');
-
+var csv = require('json-csv');
 var Database = require('../models/database.js');
-//var Depth = require('../models/depth.js');
-var Post = require('../models/post.js');
- 
-exports.post = function(req, res) {
-    new Database({id: req.body.id}).save();
-}
   
 exports.list = function(req, res) {
   exports.getResults(req,res);
 }
 
-exports.buildDateRange = function (increment, date_start, date_end){
+exports.buildDateRange = function (interval, date_start, date_end){
 
   moment().format(); // @TODO necessary??
 
-  var increments = [];
+  var intervals = [];
  
-  // Build increments for date range queries.  
+  // Build intervals for date range queries.  
   var a = moment(date_start);
   var b = moment(date_end);
 
-  for (var m = a; m.isBefore(b); m.add('days', increment)) {
+  for (var m = a; m.isBefore(b); m.add('days', interval)) {
     var year = m.format('YYYY');
     var day = m.format('D');
     var month = m.format('M');
     
     date = new Date(year, month, day);
-    increments.push(date);  // new Date(2012, 7, 14) -- necessary to lookup date in mongodb
+    intervals.push(date);  // new Date(2012, 7, 14) -- necessary to lookup date in mongodb
   }
 
-  return increments;
+  return intervals;
 }
 
 /*
@@ -72,126 +67,220 @@ exports.buildDateRange = function (increment, date_start, date_end){
 */
 exports.getResults = function(req,res) {
 
-  var _id, latitude, longitude, increment, date_start, date_end, increments, limit, callback,
-  query = {};
-  
+  var _id, latitude, longitude, interval, date_start, date_end, intervals, limit, callback, gw_basin, hydrologic_unit
+  var datacube = [];
+  var queries = []; 
+  var JSONStream = require('JSONStream');  
+  var query = {};
+
+  // Load all records for a well.  
   if(req.query.id !== undefined) {
     _id = req.query.id;
-    console.log(_id);
   }
 
+  // Search for county, basin, or watershed.
   if(req.query.county !== undefined) {
     query["properties.county"] = req.query.county;
     // @TODO add lowercase search .toLower()?
   }
 
+  if(req.query.gw_basin !== undefined) {
+    query["properties.gw_basin"] = req.query.gw_basin; // interval is in number of days.
+  }
+
+  if(req.query.hydrologic_unit !== undefined) {
+    query["properties.hydrologic_unit"] = req.query.hydrologic_unit; // interval is in number of days.
+  }
+
+  // Get lat & lon.
   if((req.query.latitude !== undefined) && (req.query.longitude !== undefined)) {
     latitude = parseInt(req.query.latitude);
     longitude = parseInt(req.query.longitude); 
   }
-
+  // Get limit to number of records per query.
   if(req.query.limit !== undefined) {
-    limit = parseInt(req.query.limit); // Increment is in number of days.
+    limit = parseInt(req.query.limit); // interval is in number of days.
     if(limit >= 500) {
-      //limit = 500;
+      //limit = 500; // Faux rate limiting.
     }
   }
   else {
-    limit = 100;
+    limit = 100; // Default limit.
   }
 
-  if(req.query.range == 'false') {
-    // ignore date range default behavior, return all records matching specific month, day or year requests @experimental (?)
+  // Get interval amount.
+  if(req.query.interval !== undefined) {
+    interval = parseInt(req.query.interval); // interval is in number of days.
   }
-  else {    
-    if(req.query.increment !== undefined) {
-      increment = parseInt(req.query.increment); // Increment is in number of days.
-      console.log(increment);
-    }
-    else {
-      increment = 365;
-    }
-  
-    if(req.query.date_start !== undefined) {
-      date_start = req.query.date_start; // Increment is in number of days.
-  
-    }
-    else {
-      date_start_m = moment().subtract('days', 365);
-      date_start = date_start_m.format('M/D/YYYY');//last year
-    }
-  
-    if(req.query.date_end !== undefined) {
-      date_end = req.query.date_end; // Increment is in number of days.
-  
-    }
-    else {
-      date_end_m = moment();
-      date_end = date_end_m.format('M/D/YYYY');
-    }
-    //console.log(date_start);
-    //console.log(date_end);
-  
-    increments = exports.buildDateRange(increment, date_start, date_end);
-    console.log(increments);  
+  else {
+    interval = 365;
   }
+
+  // Get date ranges.
+  if(req.query.date_start !== undefined) {
+    date_start = req.query.date_start; // interval is in number of days.
+
+  }
+  else {
+    date_start_m = moment().subtract('days', 365);
+    date_start = date_start_m.format('M/D/YYYY');//last year
+  }
+
+  if(req.query.date_end !== undefined) {
+    date_end = req.query.date_end; // interval is in number of days.
+  }
+  else {
+    date_end_m = moment();
+    date_end = date_end_m.format('M/D/YYYY');
+  }
+  intervals = exports.buildDateRange(interval, date_start, date_end);
 
   // Ignore records without a depth reading
-  // @TODO THis is broken?
-/*
-  if(req.query.depth !== undefined){
-    query["properties.gs_to_ws"] = {$ne: "NULL"};
-  }
-*/
-      
-    // @TODO make data cube by iterating to get multiple sets of results.
-    var group = { 
-          _id : "$id", 
-          average : { $avg : "$properties.gs_to_ws" },
-          well : {"$addToSet": {
-              geometry: "$geometry"
+  query["properties.gs_to_ws"] = {$ne: "NULL"};
+
+  // For all date ranges, do multiple callbacks and store result.
+  // http://stackoverflow.com/questions/13221262/handling-asynchronous-database-queries-in-node-js-and-mongodb
+  if(intervals.length > 1) {
+    for(var r = 0; r < intervals.length-1; r++) {    
+      queries.push((function(r){
+          return function(callback) {
+          
+          query["properties.isodate"] = {"$gte" : intervals[r], "$lte": intervals[r+1]};
+ 
+          // Get results near point.
+          if(latitude !== undefined && longitude !== undefined) {
+              // Have to filter results by location then do extra query.
+              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) { 
+                if(results.results !== undefined) {
+                  if(results.results.length > 1) {
+                    datacube.push(results.results);
+                  }
+                  else {
+                    datacube.push(['']);
+                  }
+                  callback(); // @TODO is this the closure?
+                }
+            });
+          }
+          // Not a geographic search.
+          // http://localhost:3000/watertable/v1/depth?limit=500
+          else {
+            Database.find(query).limit(limit).exec(function(err, results) {
+              if(results.length > 1) {
+                datacube.push(results);
               }
+              else {
+                datacube.push(['none']);
+              }
+              callback();
+            });
           }
         }
-    ;  
+        })(r));
+    }
+  
+    async.series(queries, function(){
+      // This function executes after all the queries have returned
+      console.log('done');
+
+      if(req.query.format == 'csv') {
+
+          var csvOutput = '';
+
+          data_csv = [];
+
+          for (i = 0; i < datacube.length; i++) {
+            data_csv = data_csv.concat(datacube[i]);
+          }    
+          console.log(data_csv);
+          var args = {
+              //required: array of data
+              data: data_csv,
+          
+              //field definitions for CSV export
+              fields : [
+                {
+                  name : 'obj.properties.gs_to_ws',
+                  label : 'Ground surface to water surface',
+                  filter : function(value) { return value; }
+                },
+                {
+                  name : 'obj.id',
+                  label : 'ID',
+                  filter : function(value) { return value; }
+                },
+                {
+                  name : 'obj.geometry.coordinates',
+                  label : 'latitude',
+                  filter : function(value) { return value[1]; }
+                },
+                {
+                  name : 'obj.geometry.coordinates',
+                  label : 'longitude',
+                  filter : function(value) { return value[0]; }
+                }
+
+              ]
+            };
   
 
-  // http://localhost:3000/watertable/v1/depth?latitude=38.7647&longitude=-121.8404?&limit=500&&increment=180&date_start=1/1/2010&date_end=12/31/2012&depth=true
+          var callback = function(err,csv) {
+            //csv contains string of converted data in CSV format. 
+res.setHeader('Content-type', 'text/csv'); 
+            res.send(csv);  
+          }
 
-  // If multiple date ranges, do multiple callbacks and store result.
-  // http://stackoverflow.com/questions/13221262/handling-asynchronous-database-queries-in-node-js-and-mongodb
-  if(increments.length > 1) {
-    var datacube = [];
-    
-//    query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
-
-
-/*
-    for(var r = 0; r < increments.length - 1; r++) {      // @TODO test upper limit
-
-      // Get results near point.
-      if(latitude !== undefined && longitude !== undefined) {
-        datacube[increments[r] + "_" + increments[r+1]] = Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+          csv.toCSV(args, callback);
+        
       }
-      // Not a geographic search.
-      // http://localhost:3000/watertable/v1/depth?limit=500
       else {
-        console.log(query);
-        datacube[increments[r] + "_" + increments[r+1]] = Database.find(query).limit(limit).exec(callback);
+        // Send GeoJSON.
+        res.send(datacube);
       }
+      
+    });
 
-      console.log(r);
-    }
-*/
+  }
+}
 
 
-//----------------
 
-    var queries = []; 
+// Load records by id
+exports.showID = (function(req, res) {
+    Database.findOne({id: req.params.id}, function(error, database) {
+        var posts = Post.find({database: database._id}, function(error, posts) {
+          res.send([{database: database, posts: posts}]);
+        });
+    })
+});
+
+// Load records by county
+exports.showCounty = (function(req, res) {
+  var query = {"properties.county": req.params.county};
+  var limit = 100;
+  var callback = function(err, databases) {
+    res.send(databases);
+  };
+  
+  Database.find(query).limit(limit).exec(callback);
+});
+
+
+
+
+
+
+
+
+
+
+
+// OLD
+
 
 /*
   // Test async query
-  for(var r = 0; r < increments.length -1; r++) {   
+  for(var r = 0; r < intervals.length -1; r++) {   
     queries.push((function(j){
         return function(callback) {
         Database.find({}).limit(10).exec(function(err, results) {
@@ -210,89 +299,7 @@ exports.getResults = function(req,res) {
   }
 */
 
-    JSONStream = require('JSONStream');
 
-/*
-  json.on('data', function(doc) {
-    // this will get called for each JSON object (available here as 'doc') that JSONStream parses
-  })
-*/
-
-    for(var r = 0; r < increments.length-1; r++) {
-      
-      queries.push((function(r){
-          return function(callback) {
-          
-          query["properties.isodate"] = {"$gte" : increments[r], "$lte": increments[r+1]};
- 
-          // Get results near point.
-          if(latitude !== undefined && longitude !== undefined) {
-              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) {
-  
-              if(results.results !== undefined) {
-                  console.log('results');
-                if(results.results.length > 1) {
-                  console.log(results.results.length);
-                  datacube.push(results.results);
-                }
-                else {
-                  datacube.push(['none']);
-                }
-                callback(); // @TODO is this the closure?
-              }
-            });
-          }
-          // Not a geographic search.
-          // http://localhost:3000/watertable/v1/depth?limit=500
-          else {
-          console.log(query);
-            Database.find(query).limit(limit).exec(function(err, results) {
-              console.log('results');
-              if(results.length > 1) {
-                datacube.push(results);
-              }
-              else {
-                datacube.push(['none']);
-              }
-              callback();
-            });
-          }
-        }
-        })(r));
-    }
-  
-  
-    async.series(queries, function(){
-      // This function executes after all the queries have returned
-      console.log('done');
-      res.send(datacube);
-    });
-
-
-  }
-  else {
-
-    callback = function(err, results) {
-      res.send(results);
-    };
-    
-    query["properties.isodate"] = {"$gte" : increments[0]};
-
-    // Get results near point.
-    if(latitude !== undefined && longitude !== undefined) {
-      Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
-    }
-    // Not a geographic search.
-    // http://localhost:3000/watertable/v1/depth?limit=500
-    else {
-      console.log(query);
-      Database.find(query).limit(limit).exec(callback);
-    }  
-  }
-  
-  
-
-}
 
 exports.getAverageDepth = function(req,res) {
 
@@ -312,7 +319,7 @@ exports.getAverageDepth = function(req,res) {
     "maxDistance":0.008
   }};
   
-  var match = {$match: {'properties.isodate':{"$gte" : increments[0], "$lte": increments[1] }}};
+  var match = {$match: {'properties.isodate':{"$gte" : intervals[0], "$lte": intervals[1] }}};
 
   // Works
   var group = 
@@ -334,36 +341,71 @@ exports.getAverageDepth = function(req,res) {
   Database.aggregate(pipeline, options, callback);
 
   // Works
-  //query = {'properties.isodate': {"$gte" : increments[0], "$lte": increments[1] }}; 
+  //query = {'properties.isodate': {"$gte" : intervals[0], "$lte": intervals[1] }}; 
   //Database.find(query).exec(callback);
 */
 };
 
 
-// Load records by id
-exports.showID = (function(req, res) {
-    Database.findOne({id: req.params.id}, function(error, database) {
-        var posts = Post.find({database: database._id}, function(error, posts) {
-          res.send([{database: database, posts: posts}]);
-        });
-    })
-});
+    
+    //    query["properties.isodate"] = {"$gte" : intervals[r], "$lte": intervals[r+1]};
 
 
-// Load records by year
-exports.showYear = (function(req, res) {
+    /*
+    for(var r = 0; r < intervals.length - 1; r++) {      // @TODO test upper limit
 
-});
+      // Get results near point.
+      if(latitude !== undefined && longitude !== undefined) {
+        datacube[intervals[r] + "_" + intervals[r+1]] = Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+      }
+      // Not a geographic search.
+      // http://localhost:3000/watertable/v1/depth?limit=500
+      else {
+        console.log(query);
+        datacube[intervals[r] + "_" + intervals[r+1]] = Database.find(query).limit(limit).exec(callback);
+      }
 
-// Load records by county
-exports.showCounty = (function(req, res) {
-  var query = {"properties.county": req.params.county};
-  var limit = 100;
-  var callback = function(err, databases) {
-    res.send(databases);
-  };
+      console.log(r);
+    }
+    */
+    
+    
+/*
+      
+  else {
+
+    callback = function(err, results) {
+      // Convert to averages.
+      
+      res.send(results);
+    };
+    // Get results from the last year.
+    query["properties.isodate"] = {"$gte" : intervals[0]};
+
+    // Get results near point.
+    if(latitude !== undefined && longitude !== undefined) {
+      Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, callback);
+    }
+    // Not a geographic search.
+    // http://localhost:3000/watertable/v1/depth?limit=500
+    else {
+      console.log("tesT" + query);
+      // raw results of queries in the date range.
+      Database.find(query).limit(limit).exec(callback);
+    }  
+  }
+*/
+
+
+/*
+    var group = { 
+          _id : "$id", 
+          average : { $avg : "$properties.gs_to_ws" },
+          well : {"$addToSet": {
+              geometry: "$geometry"
+              }
+          }
+        }
+    ;  
   
-  Database.find(query).limit(limit).exec(callback);
-});
-
-
+*/

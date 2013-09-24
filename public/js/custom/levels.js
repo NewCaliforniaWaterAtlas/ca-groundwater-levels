@@ -35,22 +35,23 @@ var latitude = 37.000;
 var longitude = -122.000;
 var date_start = '7/1/2011';
 var date_end = '7/1/2012';
-var interval = 364;
-var limit = 500;
+var interval = 180;
+var limit = 100;
+var format = 'json';
 var path = 'http://localhost:8080/api/v1?';
 
 
 var query = 'latitude='  + latitude
-          + '&longitude=' + longitude;
-/*
+          + '&longitude=' + longitude
           + '&limit=' + limit
-          + '&increment=' + interval
+          + '&interval=' + interval
           + '&date_start=' + date_start
-          + '&date_end=' + date_end;
-*/
-var wellsQuery = path;
+          + '&date_end=' + date_end
+          + '&format=' + format;
 
+var wellsQuery = path + query;
 
+console.log(wellsQuery);
 
 
 /* Initialize the SVG layer */
@@ -73,6 +74,7 @@ var labelPaddingY = 12;
 
 /* Load and project/redraw on zoom */
 d3.json(wellsQuery, function(collection) {
+    console.log(collection);
     var feature = g.selectAll("path")
       .data(collection)
       .enter()
@@ -129,5 +131,5 @@ d3.json(wellsQuery, function(collection) {
 // plot color
 // set color of aquifer
 
-// on change time slider, load selected increment
+// on change time slider, load selected interval
 // update map
