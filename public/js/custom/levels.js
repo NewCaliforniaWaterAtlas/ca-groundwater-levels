@@ -1,0 +1,149 @@
+$( "#datepicker-start" ).datepicker();
+$( "#datepicker-end" ).datepicker();
+$( "#slider" ).slider({
+      value:100,
+      min: 0,
+      max: 500,
+      step: 50,
+      slide: function( event, ui ) {
+        $( "#amount" ).val( "$" + ui.value );
+      }
+    });
+    $( "#amount" ).val( "$" + $( "#slider" ).slider( "value" ) );
+    
+
+
+// Load map
+var map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([37.5, -118], 8);
+
+// Make aquifer layer.
+var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
+map.addLayer(layer);
+
+// Load aquifers (topoJSON)
+/*
+d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
+  var basins = topojson.feature(data, data.objects.database);          
+  layer.addData(basins);
+});
+*/
+
+
+// load all wells by default -- default date range
+var address = '1400 Tenth St., Sacramento, CA, 95814';
+var latitude = 37.000;
+var longitude = -122.000;
+var date_start = '7/1/2011';
+var date_end = '7/1/2012';
+var interval = 364;
+var limit = 500;
+var path = 'http://localhost:8080/api/v1?';
+
+
+var query = 'latitude='  + latitude
+          + '&longitude=' + longitude;
+/*
+          + '&limit=' + limit
+          + '&increment=' + interval
+          + '&date_start=' + date_start
+          + '&date_end=' + date_end;
+*/
+var wellsQuery = path;
+
+
+
+
+/* Initialize the SVG layer */
+map._initPathRoot()     
+
+/* We simply pick up the SVG from the map object */
+var svg = d3.select("#map").select("svg"),
+
+
+//var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+    g = svg.append("g").attr("class", "wells");
+
+/* Define the d3 projection */
+var path = d3.geo.path().projection(function project(x) {
+    var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
+    return [point.x, point.y];
+  });
+
+/*
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+*/
+
+/* Load and project/redraw on zoom */
+d3.json(wellsQuery, function(collection) {
+
+
+/*
+svg.append("path")
+    .datum(collection)
+    .attr("d", path)
+    .attr("class", "well");
+
+svg.selectAll(".well")
+    .data(collection)
+  .enter().append("text")
+    .attr("class", "well-label")
+    .attr("transform", function(d) { console.log(d); return "translate(" + projection(d.geometry.coordinates) + ")"; })
+    .attr("dy", ".35em")
+    .text(function(d) { return d.properties.gs_to_ws; });
+*/
+
+
+    var feature = g.selectAll("path")
+      .data(collection)
+      .enter()
+      .append("path")
+      .attr("d", path)
+      .attr("class", "well");
+  
+    g.selectAll("text")
+    .data(collection)
+    .enter()
+    .append("svg:text")
+    .text(function(d){
+        return d.properties.gs_to_ws;
+    })
+    .attr("x", function(d){
+        return path.centroid(d)[0];
+    })
+    .attr("y", function(d){
+        return  path.centroid(d)[1];
+    })
+    .attr("d", path)
+    .attr("text-anchor","middle")
+    .attr('font-size','6pt');  
+
+  map.on("viewreset", function reset() {
+    feature.attr("d",path)
+  })
+});
+
+
+
+// Geocode address.
+// http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
+
+// on submit
+// get address
+// geocode it
+// get lat lon
+// get current date range
+// default interval - 365
+// construct search query
+// get back results
+// start map at the beginning
+
+// plot wells
+// add numbers to wells
+// by subbasin, construct average number
+// plot color
+// set color of aquifer
+
+// on change time slider, load selected increment
+// update map

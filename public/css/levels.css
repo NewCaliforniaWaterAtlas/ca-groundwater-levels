@@ -1,0 +1,25 @@
+
+.basin { 
+  fill: #ddc;
+  stroke: #777;
+  stroke-dasharray: 2,2;
+  stroke-linejoin: round;
+}
+
+/* .d3-vec { position:absolute; } */
+
+path {
+  fill: #ffcc00;
+  fill-opacity: .2;
+}
+
+path:hover {
+  fill: brown;
+  fill-opacity: .7;
+}
+
+
+path text {
+  color: #fff;
+}
+
