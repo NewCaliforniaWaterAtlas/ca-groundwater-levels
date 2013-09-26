@@ -8,10 +8,16 @@
 path.well {
   fill: #000000;
   fill-opacity: .5;
+  z-index: 1000;
+}
+
+path:hover {
+  fill: blue;
+  fill-opacity: .3;
 }
 
 path.well:hover {
-  fill: brown;
+  fill: red;
   fill-opacity: .7;
 }
 

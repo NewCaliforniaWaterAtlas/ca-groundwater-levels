@@ -150,10 +150,15 @@ exports.getResults = function(req,res) {
           // Get results near point.
           if(latitude !== undefined && longitude !== undefined) {
               // Have to filter results by location then do extra query.
-              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) { 
+              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, uniqueDocs: true }, function(err, results) { 
                 if(results.results !== undefined) {
                   if(results.results.length > 1) {
-                    datacube.push(results.results);
+                    var nodist = [];
+                    for (var i in results.results){
+                      obj = results.results[i].obj;
+                      nodist.push(obj);
+                    }
+                    datacube.push(nodist);
                   }
                   else {
                     datacube.push(['']);
@@ -201,12 +206,12 @@ exports.getResults = function(req,res) {
               fields : [
                 {
                   name : 'obj.properties.gs_to_ws',
-                  label : 'Ground surface to water surface',
+                  label : 'gs_to_ws',
                   filter : function(value) { return value; }
                 },
                 {
                   name : 'obj.id',
-                  label : 'ID',
+                  label : 'id',
                   filter : function(value) { return value; }
                 },
                 {
