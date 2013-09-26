@@ -18,13 +18,13 @@ var latitude = 37.000;
 var longitude = -122.000;
 var date_start = '7/1/2011';
 var date_end = '7/1/2012';
-var interval = 364;
-var limit = 300;
+var interval = 180;
+var limit = 1000;
 var format = 'json';
 var path = 'http://localhost:8080/api/v1?';
 
 // Load map
-var map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([latitude, longitude], 12);
+var map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([latitude, longitude], 6);
 
 // Make aquifer layer.
 var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
@@ -40,9 +40,13 @@ d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
 
 
 
-var query = 'latitude='  + latitude
+var query = 
+          /*
+'latitude='  + latitude
           + '&longitude=' + longitude
-          + '&limit=' + limit
+          + 
+*/
+          '&limit=' + limit
           + '&interval=' + interval
           + '&date_start=' + date_start
           + '&date_end=' + date_end
@@ -77,59 +81,63 @@ var labelPaddingY = 12;
 /* Load and project/redraw on zoom */
 d3.json(wellsQuery, function(data) {
 
-    var nest = d3.nest()
-    .key(function(d) { return d.properties.gw_basin_name; }) // average reading by basin name. 
-    .rollup(function(d) {
-      return {
-        averageGStoWS: d3.mean(d, function(g) { return g.properties.gs_to_ws; }),
-        geometry: d[0].geometry,
-        type: d[0].type,
-        properties: d[0].properties,
-        id: d[0].id,
-        _id: d[0]._id,
-      }
-    })
-    .map(data[0]);
-
-    
-    nestValues = d3.values(nest);
-    console.log(nestValues.length);    
-
-    console.log(nest);
-
-    var feature = g.selectAll("path")
-      .data(nestValues)
+    if(data.length > 1) {
+      if(data[0].length > 1){
+      var nest = d3.nest()
+      .key(function(d) { return d.properties.gw_basin_name; }) // average reading by basin name. 
+      .rollup(function(d) {
+        return {
+          averageGStoWS: d3.mean(d, function(g) { return g.properties.gs_to_ws; }),
+          geometry: d[0].geometry,
+          type: d[0].type,
+          properties: d[0].properties,
+          id: d[0].id,
+          _id: d[0]._id,
+        }
+      })
+      .map(data[0]);
+  
+      
+      nestValues = d3.values(nest);
+      console.log(nestValues.length);    
+  
+      console.log(nest);
+  
+      var feature = g.selectAll("path")
+        .data(nestValues)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class", "well");
+  
+      var featureLabel = g.selectAll("text")
+        .data(nestValues)
       .enter()
-      .append("path")
-      .attr("d", path)
-      .attr("class", "well");
-
-    var featureLabel = g.selectAll("text")
-      .data(nestValues)
-    .enter()
-    .append("svg:text")
-    .text(function(d){
-        return Math.floor(d.averageGStoWS) + " " + d.properties.gw_basin_name;
-    })
-    .attr("x", function(d){
-        return path.centroid(d)[0] + labelPaddingX;
-    })
-    .attr("y", function(d){
-        return  path.centroid(d)[1] + labelPaddingY;
-    })
-    .attr("class","well-label");
- 
-
-  map.on("viewreset", function reset() {
-    feature.attr("d",path)
+      .append("svg:text")
+      .text(function(d){
+          return Math.floor(d.averageGStoWS) + " " + d.properties.gw_basin_name;
+      })
+      .attr("x", function(d){
+          return path.centroid(d)[0] + labelPaddingX;
+      })
+      .attr("y", function(d){
+          return  path.centroid(d)[1] + labelPaddingY;
+      })
+      .attr("class","well-label");
    
-    featureLabel.attr("x", function(d){
-        return path.centroid(d)[0] + labelPaddingX;
+  
+    map.on("viewreset", function reset() {
+      feature.attr("d",path)
+     
+      featureLabel.attr("x", function(d){
+          return path.centroid(d)[0] + labelPaddingX;
+      })
+      featureLabel.attr("y", function(d){
+          return  path.centroid(d)[1] + labelPaddingY;
+      })
     })
-    featureLabel.attr("y", function(d){
-        return  path.centroid(d)[1] + labelPaddingY;
-    })
-  })
+
+  }}
 });
 
 

@@ -136,7 +136,8 @@ exports.getResults = function(req,res) {
   intervals = exports.buildDateRange(interval, date_start, date_end);
 
   // Ignore records without a depth reading
-  query["properties.gs_to_ws"] = {$ne: "NULL"};
+/*   query["properties.gs_to_ws"] = {$ne: "null"}; */
+/*   query["properties.gs_basin_name"] = {$ne: "null"}; */
 
   // For all date ranges, do multiple callbacks and store result.
   // http://stackoverflow.com/questions/13221262/handling-asynchronous-database-queries-in-node-js-and-mongodb
@@ -170,12 +171,15 @@ exports.getResults = function(req,res) {
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else {
+            console.log(query);
             Database.find(query).limit(limit).exec(function(err, results) {
-              if(results.length > 1) {
-                datacube.push(results);
-              }
-              else {
-                datacube.push(['none']);
+              if(results !== undefined) {
+                if(results.length > 1) {
+                  datacube.push(results);
+                }
+                else {
+                  datacube.push(['none']);
+                }
               }
               callback();
             });
