@@ -170,6 +170,33 @@ exports.getResults = function(req,res) {
           }
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
+          else if(req.query.averages == "true") {
+          
+
+            Database.aggregate([
+              { $match: query },
+              { $group: {
+                 '_id': "$properties.gw_basin_code",
+                 'averageGStoWS' : { '$avg' : "$properties.gs_to_ws" }
+                }
+              }
+               
+              ],{limit: limit},function(err, results) {
+              if(results !== undefined) {
+                if(results.length > 1) {
+                  datacube.push(results);
+                }
+                else {
+                  datacube.push(['none']);
+                }
+              }
+              callback();
+            } );
+
+
+
+
+          }
           else {
             console.log(query);
             Database.find(query).limit(limit).exec(function(err, results) {
