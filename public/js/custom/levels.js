@@ -6,7 +6,7 @@ var date_end = '7/1/2012';
 var interval = 90;
 var limit = 1000;
 var format = 'json';
-var apiPath = 'http://localhost:8080/api/v1?';
+var apiPath = '/api/v1?';
 
 var labelPaddingX = 8;
 var labelPaddingY = 12;
@@ -119,7 +119,6 @@ function buildSubBasins(data, differences) {
 
       basinsSVG.attr("d",path);
 
-/*
       feature.attr("d",path);
    
       featureLabel.attr("x", function(d){
@@ -129,7 +128,6 @@ function buildSubBasins(data, differences) {
       featureLabel.attr("y", function(d){
           return  path.centroid(d)[1] + labelPaddingY;
       });
-*/
   });
 
 };
@@ -170,53 +168,13 @@ var svg = d3.select("#map").select("svg"),
 
 */
 
-// Calculate changes in average by interval.
-/*
-d3.json(averagesQuery, function(data) {
-  var differences = [];
-  var data0 = d3.map(data[0]);
-  var data1 = d3.map(data[1]);
 
-  
-  d0map = data[0].map(function(d){
-    console.log(d._id);
-    
-
-    var int2 = data[1].filter(function(g) { 
-      return g;
-    })[0];
-    
-    differences[d._id] = {
-      start: d.averageGStoWS,
-      change:  int2.averageGStoWS - d.averageGStoWS,
-      end: int2.averageGStoWS
-    };
-
-  });
-  console.log(differences);
-
-  var color_domain = [50, 150, 350, 750, 1500]
-  var ext_color_domain = [0, 50, 150, 350, 750, 1500]
-  var legend_labels = ["< 50", "50+", "150+", "350+", "750+", "> 1500"]              
-  var color = d3.scale.threshold()
-  .domain(color_domain)
-  .range(["#adfcad", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]);
-
-
-    
-//    averageNextInterval = data[1]
-  
-
-
-  console.log(data);
-});
-*/
 
 /* Load and project/redraw on zoom */
-/*
-d3.json(wellsQuery, function(data) {
 
 
+
+function loadWells(data) {
 
     if(data.length > 1) {
       if(data[0].length > 1){
@@ -275,9 +233,11 @@ d3.json(wellsQuery, function(data) {
     })
 
   }}
-});
+}
 
-*/
+
+
+
 /*
 
 $( "#datepicker-start" ).datepicker();
@@ -294,7 +254,6 @@ $( "#slider" ).slider({
     $( "#amount" ).val( "$" + $( "#slider" ).slider( "value" ) );
     
 */
-
 
 /*
 d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
@@ -324,3 +283,46 @@ d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
 
 // on change time slider, load selected interval
 // update map
+
+
+// Calculate changes in average by interval.
+/*
+d3.json(averagesQuery, function(data) {
+  var differences = [];
+  var data0 = d3.map(data[0]);
+  var data1 = d3.map(data[1]);
+
+  
+  d0map = data[0].map(function(d){
+    console.log(d._id);
+    
+
+    var int2 = data[1].filter(function(g) { 
+      return g;
+    })[0];
+    
+    differences[d._id] = {
+      start: d.averageGStoWS,
+      change:  int2.averageGStoWS - d.averageGStoWS,
+      end: int2.averageGStoWS
+    };
+
+  });
+  console.log(differences);
+
+  var color_domain = [50, 150, 350, 750, 1500]
+  var ext_color_domain = [0, 50, 150, 350, 750, 1500]
+  var legend_labels = ["< 50", "50+", "150+", "350+", "750+", "> 1500"]              
+  var color = d3.scale.threshold()
+  .domain(color_domain)
+  .range(["#adfcad", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]);
+
+
+    
+//    averageNextInterval = data[1]
+  
+
+
+  console.log(data);
+});
+*/
