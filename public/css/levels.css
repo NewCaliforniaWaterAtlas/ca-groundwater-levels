@@ -21,7 +21,7 @@ path.well:hover {
   fill-opacity: .7;
 }
 
-
+.basins text,
 .well-label {
   font-family: 'Questrial', sans-serif;
   font-size: 20px;
@@ -31,6 +31,6 @@ path.well:hover {
 }
 
 
-.legend {
+.legend-item {
   font-size: 12px;
 }

@@ -3,10 +3,10 @@ var latitude = 37.000;
 var longitude = -122.000;
 var date_start = '7/1/2011';
 var date_end = '7/1/2012';
-var interval = 180;
+var interval = 90;
 var limit = 1000;
 var format = 'json';
-var apiPath = 'http://localhost:8080/api/v1?';
+var apiPath = '/api/v1?';
 
 var labelPaddingX = 8;
 var labelPaddingY = 12;
@@ -23,13 +23,6 @@ map.addLayer(layer);
 /* Initialize the SVG layer */
 map._initPathRoot()     
 
-
-/* Define the d3 projection */
-var path = d3.geo.path().projection(function project(x) {
-    var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
-    return [point.x, point.y];
-  });
-
 var query = 
           //'latitude='  + latitude
           //+ '&longitude=' + longitude
@@ -41,14 +34,15 @@ var query =
           + '&format=' + format;
 
 var wellsQuery = apiPath + query;
+console.log(wellsQuery);
 var averagesQuery = apiPath + query + '&averages=' + "true";
 
-var color_range = ["#33838e", "#a1dde5", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"];
+/* var color_range = ["#33838e", "#a1dde5", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]; */
+var color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
 
-
-var color_domain = [-500, -100, -50, -25, 0, 25, 50];
-var ext_color_domain = [-1000, -500, -100, -50, -25, 0, 25, 50];
-var legend_labels = ["< -500", "-100", "-50", "-25", "0","25", "50"];
+  var color_domain = [-100, -50, 0, 50, 100]
+  var ext_color_domain = [-150, -100, -50, 0, 50, 100]
+  var legend_labels = ["< -150", "-100", "-50", "0", "50", "> 100"]   
 var color = d3.scale.threshold()
 .domain(color_domain)
 .range(color_range.reverse());
@@ -56,53 +50,82 @@ var color = d3.scale.threshold()
 queue()
     .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
     .defer(d3.json, averagesQuery)
+/*     .defer(d3.json, wellsQuery) */
     .await(ready);
 
 
-function ready(error, data1, data2) {
-  differences = processDifferences(data2);
-  buildSubBasins(data1, differences);
+function ready(error, aquifers, averages, wells) {
+  differences = processDifferences(averages,0);
+  buildSubBasins(aquifers, differences, wells, 0);
 };
 
-function buildSubBasins(data, differences) {
+function buildSubBasins(data, differences, wells, int) {
   var basins = topojson.feature(data, data.objects.database);
-  console.log(basins);
+  /* Define the d3 projection */
+
+  var path = d3.geo.path().projection(function project(x) {
+    var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
+    return [point.x, point.y];
+  });
+  
  // layer.addData(basins);
 
-  var svg = d3.select("#map").select("svg"),
-    g = svg.append("g").attr("class", "basins");
+  var svg = d3.select("#map").select("svg");
+  var b = svg.append("g").attr("class", "basins");
 
-   var basinsSVG = g.append("g")
+  var basinsSVG = b.append("g")
   .attr("class", "basin")
   .selectAll("path")
   .data(basins.features)
   .enter().append("path")
   .attr("d", path)
   .style("fill", function(d) {
-
     if(d.id !== undefined){
-          if(differences[d.id] !== undefined){
-            var change = differences[d.id].change;
-          }
-          else {
-            var change = 0;
-          }
-
+      if(differences[d.id] !== undefined){
+        var change = differences[d.id].change;
+      }
+      else {
+        var change = 0;
+      }
     }
-
     return color(change);
   })
   .style("opacity", 0.8);
+
+
+  var basinLabel = b.selectAll("text")
+    .data(basins.features)
+    .enter()
+    .append("svg:text")
+    .text(function(d){
+      if(d.id !== undefined){
+        if(differences[d.id] !== undefined){
+          var change = differences[d.id].change;
+                return Math.floor(change);
+        }
+    }
+  })
+  .attr("x", function(d){
+      return path.centroid(d)[0];
+  })
+  .attr("y", function(d){
+      return  path.centroid(d)[1];
+  })
+
  
   var width = 960,
   height = 300;
   var ls_w = 20, ls_h = 20;
-  var legend = svg.selectAll("g.legend")
+  
+  var legend = d3.select("#map").select("svg");
+  var legendGroup = svg.append("g").attr("class", "legend");
+    
+  var legendSVG = legendGroup.selectAll(".legend")
   .data(ext_color_domain)
   .enter().append("g")
-  .attr("class", "legend");
+  .attr("class", "legend-item");
 
-  legend.append("rect")
+  legendSVG.append("rect")
   .attr("x", 20)
   .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
   .attr("width", ls_w)
@@ -110,54 +133,117 @@ function buildSubBasins(data, differences) {
   .style("fill", function(d, i) { return color(d); })
   .style("opacity", 0.8);
 
-  legend.append("text")
+  legendSVG.append("text")
   .attr("x", 50)
   .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
   .text(function(d, i){ return legend_labels[i]; });
   
-    map.on("viewreset", function reset() {
+
+/*
+  var wellsLayer = d3.select("#map").select("svg");
+  var wellsGroup = svg.append("g").attr("class", "wells");
+  
+  var well = wellsGroup.selectAll("path")
+    .data(wells[int])
+    .enter()
+    .append("path")
+    .attr("d", path)
+    .attr("class", "well");
+
+  var wellLabel = wellsGroup.selectAll("text")
+    .data(wells[int])
+    .enter()
+    .append("svg:text")
+    .text(function(d){
+            if(d.properties.gs_to_ws !== undefined) {
+      return Math.floor(d.properties.gs_to_ws);
+      }
+  })
+  .attr("x", function(d){
+      return path.centroid(d)[0] + labelPaddingX;
+  })
+  .attr("y", function(d){
+      return  path.centroid(d)[1] + labelPaddingY;
+  })
+  .attr("class","well-label");
+*/
+
+
+  map.on("viewreset", function reset() {
 
       basinsSVG.attr("d",path);
 
+       basinLabel.attr("x", function(d){
+          return path.centroid(d)[0];
+        });
+        
+        basinLabel.attr("y", function(d){
+            return  path.centroid(d)[1];
+        });  
+
 /*
-      feature.attr("d",path);
-   
-      featureLabel.attr("x", function(d){
-          return path.centroid(d)[0] + labelPaddingX;
-      });
       
-      featureLabel.attr("y", function(d){
-          return  path.centroid(d)[1] + labelPaddingY;
-      });
+      var zoom  = map.getZoom();
+      
+      if(zoom > 8) {
+      
+        well.attr("d",path);
+   
+        wellLabel.attr("x", function(d){
+          return path.centroid(d)[0] + labelPaddingX;
+        });
+        
+        wellLabel.attr("y", function(d){
+            return  path.centroid(d)[1] + labelPaddingY;
+        });      
+
+      }
+      else {
+        d3.selectAll(".well")
+          .remove();
+          
+        d3.selectAll(".well-label")
+          .remove();
+      }
 */
+      
   });
 
 };
 
-
-  
-  
-
-function processDifferences(data) {
+function processDifferences(data,int) {
+  // Build list of differences from one interval to the next (where they match)
+  var int = 0;
   var differences = [];
-  var data0 = d3.map(data[0]);
-  var data1 = d3.map(data[1]);
 
-  d0map = data[0].map(function(d){
-    var int2 = data[1].filter(function(g) { 
-      return g;
-    })[0];
-    
+  // Map of the two intervals.
+  var data0 = d3.map(data[int]);
+  var data1 = d3.map(data[int+1]);
+
+  // Current map (start date)
+  d0 = data[int].map(function(d){    
     if(d._id !== undefined && d._id !== null && d._id !== ''){
-    id_upper = d._id.toUpperCase();
-    differences[id_upper] = {
-      start: d.averageGStoWS,
-      change:  int2.averageGStoWS - d.averageGStoWS,
-      end: int2.averageGStoWS
-    };
+      
+      id_upper = d._id.toUpperCase();
+
+
+      d1 = data[int+1].filter(function(g){
+        if(d._id == g._id){
+          return g;
+        }
+      })[0];
+  
+      if(d1 !== undefined) {
+        differences[id_upper] = {
+          start: d.averageGStoWS,
+          change:  d1.averageGStoWS - d.averageGStoWS,
+          end: d1.averageGStoWS
+        };  
+      }
+
     }
   });
-console.log(differences);
+
   return differences;  
 };
 
@@ -170,89 +256,30 @@ var svg = d3.select("#map").select("svg"),
 
 */
 
-// Calculate changes in average by interval.
-/*
-d3.json(averagesQuery, function(data) {
-  var differences = [];
-  var data0 = d3.map(data[0]);
-  var data1 = d3.map(data[1]);
 
-  
-  d0map = data[0].map(function(d){
-    console.log(d._id);
-    
-
-    var int2 = data[1].filter(function(g) { 
-      return g;
-    })[0];
-    
-    differences[d._id] = {
-      start: d.averageGStoWS,
-      change:  int2.averageGStoWS - d.averageGStoWS,
-      end: int2.averageGStoWS
-    };
-
-  });
-  console.log(differences);
-
-  var color_domain = [50, 150, 350, 750, 1500]
-  var ext_color_domain = [0, 50, 150, 350, 750, 1500]
-  var legend_labels = ["< 50", "50+", "150+", "350+", "750+", "> 1500"]              
-  var color = d3.scale.threshold()
-  .domain(color_domain)
-  .range(["#adfcad", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]);
-
-
-    
-//    averageNextInterval = data[1]
-  
-
-
-  console.log(data);
-});
-*/
 
 /* Load and project/redraw on zoom */
-/*
-d3.json(wellsQuery, function(data) {
 
 
+
+function showWells(data, int) {
 
     if(data.length > 1) {
-      if(data[0].length > 1){
-      var nest = d3.nest()
-      .key(function(d) { return d.properties.gw_basin_name; }) // average reading by basin name. 
-      .rollup(function(d) {
-        return {
-          averageGStoWS: d3.mean(d, function(g) { return g.properties.gs_to_ws; }),
-          geometry: d[0].geometry,
-          type: d[0].type,
-          properties: d[0].properties,
-          id: d[0].id,
-          _id: d[0]._id,
-        }
-      })
-      .map(data[0]);
-  
-      
-      nestValues = d3.values(nest);
-      console.log(nestValues.length);    
-  
-      console.log(nest);
+      if(data[int].length > 1){
   
       var feature = g.selectAll("path")
-        .data(nestValues)
+        .data(data[int])
         .enter()
         .append("path")
         .attr("d", path)
         .attr("class", "well");
   
       var featureLabel = g.selectAll("text")
-        .data(nestValues)
+        .data(data[int])
       .enter()
       .append("svg:text")
       .text(function(d){
-          return Math.floor(d.averageGStoWS) + " " + d.properties.gw_basin_name;
+          return Math.floor(d.gs_to_ws) + " " + d.properties.gw_basin_name;
       })
       .attr("x", function(d){
           return path.centroid(d)[0] + labelPaddingX;
@@ -275,10 +302,11 @@ d3.json(wellsQuery, function(data) {
     })
 
   }}
-});
+}
 
-*/
-/*
+
+
+
 
 $( "#datepicker-start" ).datepicker();
 $( "#datepicker-end" ).datepicker();
@@ -291,17 +319,9 @@ $( "#slider" ).slider({
         $( "#amount" ).val( "$" + ui.value );
       }
     });
-    $( "#amount" ).val( "$" + $( "#slider" ).slider( "value" ) );
+$( "#amount" ).val( "$" + $( "#slider" ).slider( "value" ) );
     
-*/
 
-
-/*
-d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
-  var basins = topojson.feature(data,data.objects.database);
-  layer.addData(basins);  
-});
-*/
 
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
@@ -324,3 +344,5 @@ d3.json('../../data/topojson/dwr_basin_boundaries.json', function(error, data) {
 
 // on change time slider, load selected interval
 // update map
+
+
