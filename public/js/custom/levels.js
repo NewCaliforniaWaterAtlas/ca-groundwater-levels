@@ -3,7 +3,7 @@ var latitude = 37.000;
 var longitude = -122.000;
 var date_start = '7/1/2011';
 var date_end = '7/1/2012';
-var interval = 180;
+var interval = 90;
 var limit = 1000;
 var format = 'json';
 var apiPath = 'http://localhost:8080/api/v1?';
@@ -60,7 +60,7 @@ queue()
 
 
 function ready(error, data1, data2) {
-  differences = processDifferences(data2);
+  differences = processDifferences(data2,2);
   buildSubBasins(data1, differences);
 };
 
@@ -138,10 +138,10 @@ function buildSubBasins(data, differences) {
   
   
 
-function processDifferences(data) {
+function processDifferences(data,int) {
   var differences = [];
-  var data0 = d3.map(data[0]);
-  var data1 = d3.map(data[1]);
+  var data0 = d3.map(data[0+int]);
+  var data1 = d3.map(data[1+int]);
 
   d0map = data[0].map(function(d){
     var int2 = data[1].filter(function(g) { 
