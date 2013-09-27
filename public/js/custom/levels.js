@@ -38,6 +38,8 @@ levels.buildMap = function() {
   console.log(levels.wellsQuery);
   levels.averagesQuery = levels.apiPath + levels.query + '&averages=' + "true";
   
+  
+  // http://bl.ocks.org/KoGor/5685876
   /* var color_range = ["#33838e", "#a1dde5", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]; */
   levels.color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
   
@@ -84,21 +86,75 @@ levels.buildMap = function() {
 
 levels.setupInterface = function() {
 
-  $( "#datepicker-start" ).datepicker();
-  $( "#datepicker-end" ).datepicker();
+/*
+    $( "#datepicker-start" ).datepicker();
+    $( "#datepicker-end" ).datepicker();
+*/
   
-  $( "#slider" ).slider({
-        value:100,
-        min: 0,
-        max: 500,
-        step: 50,
-        slide: function( event, ui ) {
-          $( "#amount" ).val( "$" + ui.value );
+    $('.date-start').val(levels.date_start);
+    $('.date-end').val(levels.date_end);
+  
+    // http://forum.jquery.com/topic/jquery-slider-for-date-range-in-two-text-boxes
+    var minDate = new Date(1983, 0, 1);
+    var maxDate = new Date(2013, 5, 30); // Set to available data.
+
+    var slider;
+    var startDate;
+    var endDate;
+
+    $(function() {
+        slider = $('#slider').slider({
+          range: true,
+          value: startDate,
+          max: daysDiff(minDate, maxDate),
+          slide: function(event, ui) { resync(ui.values); }
+        });
+        
+        startDate = $('#datepicker-start').datepicker({
+            minDate: minDate, 
+            maxDate: maxDate,
+            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
+
+        endDate = $('#datepicker-end').datepicker({
+            minDate: minDate, 
+            maxDate: maxDate,
+            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
+        });
+
+        function resync(values) {
+            if (values) {
+                var date = new Date(minDate.getTime());
+                date.setDate(date.getDate() + values[0]);
+                startDate.val($.datepicker.formatDate('mm/dd/yy', date));
+                date = new Date(minDate.getTime());
+                date.setDate(date.getDate() + values[1]);
+                endDate.val($.datepicker.formatDate('mm/dd/yy', date));
+            }
+            else {
+                var start = daysDiff(minDate, startDate.datepicker('getDate') || minDate);
+                var end = daysDiff(minDate, endDate.datepicker('getDate') || maxDate);
+                start = Math.min(start, end);
+                slider.slider('values', 0, start);
+                slider.slider('values', 1, end);
+            }
+            startDate.datepicker('option', 'maxDate', endDate.datepicker('getDate') || maxDate);
+            endDate.datepicker('option', 'minDate', startDate.datepicker('getDate') || minDate);
         }
-      });
-  $( "#amount").val( "$" + $( "#slider" ).slider( "value" ) );
+        
+        function daysDiff(d1, d2) {
+            return  Math.floor((d2.getTime() - d1.getTime()) / 86400000);
+        }
+    
+
+
+
+      
+/*   $( "#amount").val( "$" + $( "#slider" ).slider( "value" ) ); */
 };
 
+levels.updateInterface = function() {
+  
+};
 
 levels.display = function(error, aquifers, averages, wells) {
   differences = levels.processDifferences(averages,0);
