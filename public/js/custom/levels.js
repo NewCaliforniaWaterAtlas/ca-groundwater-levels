@@ -4,61 +4,14 @@ levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
 levels.date_start = '7/1/2010';
-levels.date_end = '7/1/2012';
-levels.interval = 364;
+levels.date_end = '7/1/2011';
+levels.interval = 90;
 levels.limit = 1000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
 levels.labelPaddingY = 12;
-
-levels.buildMap = function() {
-  // Load map
-  map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([levels.latitude, levels.longitude], 6);
-  
-  // Make aquifer layer.
-  var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
-  map.addLayer(layer);
-  
-  // Load aquifers (topoJSON)
-  /* Initialize the SVG layer */
-  map._initPathRoot()     
-  
-  levels.query = 
-            //'latitude='  + latitude
-            //+ '&longitude=' + longitude
-            //+ "&" +
-            'limit=' + levels.limit
-            + '&interval=' + levels.interval
-            + '&date_start=' + levels.date_start
-            + '&date_end=' + levels.date_end
-            + '&format=' + levels.format;
-  
-  levels.wellsQuery = levels.apiPath + levels.query;
-  console.log(levels.wellsQuery);
-  levels.averagesQuery = levels.apiPath + levels.query + '&averages=' + "true";
-  
-  
-  // http://bl.ocks.org/KoGor/5685876
-  /* var color_range = ["#33838e", "#a1dde5", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]; */
-  levels.color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
-  
-  levels.color_domain = [-50, -25, 0, 25, 50]
-  levels.ext_color_domain = [-100, -50, -25, 0, 25, 50]
-  levels.legend_labels = ["< -100", "-50", "-25", "0", "25", "> 50"]   
-  levels.color = d3.scale.threshold()
-  .domain(levels.color_domain)
-  .range(levels.color_range.reverse());
-  
-  queue()
-      .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
-      .defer(d3.json, levels.averagesQuery)
-  /*     .defer(d3.json, levels.wellsQuery) */
-      .await(levels.display);
-};
-
-
-
+levels.currentInterval = 0;
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
 
@@ -81,96 +34,95 @@ levels.buildMap = function() {
 // on change time slider, load selected interval
 // update map
 
+levels.buildMap = function() {
+  // Load map
+  map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([levels.latitude, levels.longitude], 6);
+  
+  // Make aquifer layer.
+  var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
+  map.addLayer(layer);
+  
+  /* Initialize the SVG layer */
+  map._initPathRoot()     
+  
+  levels.query = 
+            //'latitude='  + latitude
+            //+ '&longitude=' + longitude
+            //+ "&" +
+            'limit=' + levels.limit
+            + '&interval=' + levels.interval
+            + '&date_start=' + levels.date_start
+            + '&date_end=' + levels.date_end
+            + '&format=' + levels.format;
+  
+  levels.wellsQuery = levels.apiPath + levels.query;
+  console.log(levels.wellsQuery);
+  levels.averagesQuery = levels.apiPath + levels.query + '&averages=' + "true";
+  
+  
+  // http://bl.ocks.org/KoGor/5685876
+  levels.color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
+  
+  levels.color_domain = [-50, -25, 0, 25, 50]
+  levels.ext_color_domain = [-100, -50, -25, 0, 25, 50]
+  levels.legend_labels = ["< -100", "-50", "-25", "0", "25", "> 50"]   
+  levels.color = d3.scale.threshold()
+  .domain(levels.color_domain)
+  .range(levels.color_range.reverse());
+  
+  queue()
+      .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
+      .defer(d3.json, levels.averagesQuery)
+  /*     .defer(d3.json, levels.wellsQuery) */
+      .await(levels.display);
+};
 
-
+levels.reloadMap = function() {
+  levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
+  levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
+};
 
 levels.setupInterface = function() {
+  $('.date-start').val(levels.date_start);
+  $('.date-end').val(levels.date_end);
 
-/*
-    $( "#datepicker-start" ).datepicker();
-    $( "#datepicker-end" ).datepicker();
-*/
-  
-    $('.date-start').val(levels.date_start);
-    $('.date-end').val(levels.date_end);
-  
-    // http://forum.jquery.com/topic/jquery-slider-for-date-range-in-two-text-boxes
-    var minDate = new Date(1983, 0, 1);
-    var maxDate = new Date(2013, 5, 30); // Set to available data.
-
-    var slider;
-    var startDate;
-    var endDate;
-
-    $(function() {
-        slider = $('#slider').slider({
-          range: true,
-          value: startDate,
-          max: daysDiff(minDate, maxDate),
-          slide: function(event, ui) { resync(ui.values); }
-        });
-        
-        startDate = $('#datepicker-start').datepicker({
-            minDate: minDate, 
-            maxDate: maxDate,
-            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
-
-        endDate = $('#datepicker-end').datepicker({
-            minDate: minDate, 
-            maxDate: maxDate,
-            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
-        });
-
-        function resync(values) {
-            if (values) {
-                var date = new Date(minDate.getTime());
-                date.setDate(date.getDate() + values[0]);
-                startDate.val($.datepicker.formatDate('mm/dd/yy', date));
-                date = new Date(minDate.getTime());
-                date.setDate(date.getDate() + values[1]);
-                endDate.val($.datepicker.formatDate('mm/dd/yy', date));
-            }
-            else {
-                var start = daysDiff(minDate, startDate.datepicker('getDate') || minDate);
-                var end = daysDiff(minDate, endDate.datepicker('getDate') || maxDate);
-                start = Math.min(start, end);
-                slider.slider('values', 0, start);
-                slider.slider('values', 1, end);
-            }
-            startDate.datepicker('option', 'maxDate', endDate.datepicker('getDate') || maxDate);
-            endDate.datepicker('option', 'minDate', startDate.datepicker('getDate') || minDate);
-        }
-        
-        function daysDiff(d1, d2) {
-            return  Math.floor((d2.getTime() - d1.getTime()) / 86400000);
-        }
-    
-
-
-
-      
-/*   $( "#amount").val( "$" + $( "#slider" ).slider( "value" ) ); */
+  $( "#datepicker-start" ).datepicker();
+  $( "#datepicker-end" ).datepicker();
 };
 
 levels.updateInterface = function() {
-  
+  $('#slider').labeledslider({ 
+    max: levels.numberIntervals, 
+    tickInterval: 1,
+    slide: function(event, ui) { 
+      levels.currentInterval = ui.value;
+      levels.reloadMap();
+    }
+  });  
 };
 
 levels.display = function(error, aquifers, averages, wells) {
-  differences = levels.processDifferences(averages,0);
-  levels.buildSubBasins(aquifers, differences, wells, 0);
+  levels.numberIntervals = averages.length;
+  levels.aquifers = aquifers;
+  levels.averages = averages;
+  levels.wells = wells;
+
+  levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
+  levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
+  levels.updateInterface();
 };
 
 levels.buildSubBasins = function(data, differences, wells, int) {
     var basins = topojson.feature(data, data.objects.database);
-    /* Define the d3 projection */
 
     var path = d3.geo.path().projection(function project(x) {
     var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
     return [point.x, point.y];
   });
   
- // layer.addData(basins);
+  // Clear existing data.
+  d3.select(".basins").remove("g");
+
 
   var svg = d3.select("#map").select("svg");
   var b = svg.append("g").attr("class", "basins");
@@ -397,3 +349,65 @@ levels.showWells = function(data, int) {
 
 levels.setupInterface();
 levels.buildMap();
+
+
+
+/*
+
+    $(function() {
+        slider = $('#slider').slider({
+          animate: true,
+          range: false,
+          step: 3,
+          value: startDate,
+          max: daysDiff(minDate, maxDate),
+          slide: function(event, ui) { resync(ui.values); }
+        });
+*/
+/*
+        
+        startDate = $('#datepicker-start').datepicker({
+            minDate: new Date($('.date-start').val()), 
+            maxDate: maxDate,
+            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
+*/
+/*
+
+        endDate = $('#datepicker-end').datepicker({
+            minDate: minDate, 
+            maxDate: maxDate,
+            onSelect: function(dateStr) { resync(); }}).keyup(function() { resync(); });
+*/
+/*
+
+
+        });
+
+        function resync(values) {
+*/
+/*
+            if (values) {
+                var date = new Date(minDate.getTime());
+                date.setDate(date.getDate() + values[0]);
+                startDate.val($.datepicker.formatDate('mm/dd/yy', date));
+                date = new Date(minDate.getTime());
+                date.setDate(date.getDate() + values[1]);
+                //endDate.val($.datepicker.formatDate('mm/dd/yy', date));
+            }
+            else {
+                var start = daysDiff(minDate, startDate.datepicker('getDate') || minDate);
+                var end = daysDiff(minDate, endDate.datepicker('getDate') || maxDate);
+                start = Math.min(start, end);
+                slider.slider('values', 0, start);
+                slider.slider('values', 1, end);
+            }
+            //startDate.datepicker('option', 'maxDate', endDate.datepicker('getDate') || maxDate);
+            //endDate.datepicker('option', 'minDate', startDate.datepicker('getDate') || minDate);
+*/
+/*
+        }
+        
+        function daysDiff(d1, d2) {
+            return  Math.floor((d2.getTime() - d1.getTime()) / 86400000);
+        }
+*/
