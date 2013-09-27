@@ -29,3 +29,8 @@ path.well:hover {
 /*   color: #0c0c0a; */
   fill: #b2570d;
 }
+
+
+.legend {
+  font-size: 12px;
+}

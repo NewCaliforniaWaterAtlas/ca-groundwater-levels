@@ -43,13 +43,15 @@ var query =
 var wellsQuery = apiPath + query;
 var averagesQuery = apiPath + query + '&averages=' + "true";
 
+var color_range = ["#33838e", "#a1dde5", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"];
 
-var color_domain = [-1000, -100, -50, -25, -10, -5, 0, 10, 100];
-var ext_color_domain = [-1500, -1000, -100, -50, -25, -10, -5, 0, 10, 100];
-var legend_labels = ["< -1000", "-100", "-50", "-25", "-10", "-5", "0", "10", "> 100"];
+
+var color_domain = [-500, -100, -50, -25, 0, 25, 50];
+var ext_color_domain = [-1000, -500, -100, -50, -25, 0, 25, 50];
+var legend_labels = ["< -500", "-100", "-50", "-25", "0","25", "50"];
 var color = d3.scale.threshold()
 .domain(color_domain)
-.range(["#adfcad", "#ffcb40", "#ffba00", "#ff7d73", "#ff4e40", "#ff1300"]);
+.range(color_range.reverse());
 
 queue()
     .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
@@ -80,22 +82,38 @@ function buildSubBasins(data, differences) {
 
     if(d.id !== undefined){
           if(differences[d.id] !== undefined){
-            console.log(differences[d.id].change);
-          } 
-
+            var change = differences[d.id].change;
+          }
+          else {
+            var change = 0;
+          }
 
     }
-/*
-    if(gwbasin !== undefined){
-    if(differences[gwbasin] !== undefined){
-    console.log(differences[gwbasin].change);
-    }}
-*/
-/*     color() */
-    return /* color(rateById[d.properties.GWBASIN]);  */ '#ffaa00';
+
+    return color(change);
   })
   .style("opacity", 0.8);
-  
+ 
+  var width = 960,
+  height = 300;
+  var ls_w = 20, ls_h = 20;
+  var legend = svg.selectAll("g.legend")
+  .data(ext_color_domain)
+  .enter().append("g")
+  .attr("class", "legend");
+
+  legend.append("rect")
+  .attr("x", 20)
+  .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+  .attr("width", ls_w)
+  .attr("height", ls_h)
+  .style("fill", function(d, i) { return color(d); })
+  .style("opacity", 0.8);
+
+  legend.append("text")
+  .attr("x", 50)
+  .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+  .text(function(d, i){ return legend_labels[i]; });
   
     map.on("viewreset", function reset() {
 
@@ -115,6 +133,10 @@ function buildSubBasins(data, differences) {
   });
 
 };
+
+
+  
+  
 
 function processDifferences(data) {
   var differences = [];
