@@ -24,10 +24,10 @@ path.well:hover {
 .basins text,
 .well-label {
   font-family: 'Questrial', sans-serif;
-  font-size: 20px;
+  font-size: 12px;
   margin-top: 0px;
-/*   color: #0c0c0a; */
-  fill: #b2570d;
+  color: #0c0c0a;
+/*   fill: #b2570d; */
 }
 
 
