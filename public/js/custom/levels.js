@@ -77,11 +77,6 @@ levels.buildMap = function() {
       .await(levels.display);
 };
 
-levels.reloadMap = function() {
-  levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
-  levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
-};
-
 levels.setupInterface = function() {
   $('.date-start').val(levels.date_start);
   $('.date-end').val(levels.date_end);
@@ -92,11 +87,11 @@ levels.setupInterface = function() {
 
 levels.updateInterface = function() {
   $('#slider').labeledslider({ 
-    max: levels.numberIntervals, 
+    max: levels.numberIntervals - 2, 
     tickInterval: 1,
     slide: function(event, ui) { 
       levels.currentInterval = ui.value;
-      levels.reloadMap();
+      levels.loadInterval();
     }
   });  
 };
@@ -110,6 +105,14 @@ levels.display = function(error, aquifers, averages, wells) {
   levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
   levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
   levels.updateInterface();
+};
+
+
+levels.loadInterval = function() {
+  levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
+  console.log(levels.differences);
+  console.log(levels.currentInterval);
+  levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
 };
 
 levels.buildSubBasins = function(data, differences, wells, int) {
@@ -269,7 +272,7 @@ levels.buildSubBasins = function(data, differences, wells, int) {
 
 levels.processDifferences = function(data,int) {
   // Build list of differences from one interval to the next (where they match)
-  var int = 0;
+  var int = levels.currentInterval;
   var differences = [];
 
   // Map of the two intervals.
@@ -279,10 +282,7 @@ levels.processDifferences = function(data,int) {
   // Current map (start date)
   d0 = data[int].map(function(d){    
     if(d._id !== undefined && d._id !== null && d._id !== ''){
-      
       id_upper = d._id.toUpperCase();
-
-
       d1 = data[int+1].filter(function(g){
         if(d._id == g._id){
           return g;
