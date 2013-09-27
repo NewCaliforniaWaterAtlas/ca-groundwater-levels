@@ -136,7 +136,8 @@ exports.getResults = function(req,res) {
   intervals = exports.buildDateRange(interval, date_start, date_end);
 
   // Ignore records without a depth reading
-  query["properties.gs_to_ws"] = {$ne: "NULL"};
+/*   query["properties.gs_to_ws"] = {$ne: "null"}; */
+/*   query["properties.gs_basin_name"] = {$ne: "null"}; */
 
   // For all date ranges, do multiple callbacks and store result.
   // http://stackoverflow.com/questions/13221262/handling-asynchronous-database-queries-in-node-js-and-mongodb
@@ -150,10 +151,15 @@ exports.getResults = function(req,res) {
           // Get results near point.
           if(latitude !== undefined && longitude !== undefined) {
               // Have to filter results by location then do extra query.
-              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, includeLocs:false}, function(err, results) { 
+              Database.collection.geoNear(longitude, latitude, {query: query, num: limit, uniqueDocs: true }, function(err, results) { 
                 if(results.results !== undefined) {
                   if(results.results.length > 1) {
-                    datacube.push(results.results);
+                    var nodist = [];
+                    for (var i in results.results){
+                      obj = results.results[i].obj;
+                      nodist.push(obj);
+                    }
+                    datacube.push(nodist);
                   }
                   else {
                     datacube.push(['']);
@@ -164,13 +170,43 @@ exports.getResults = function(req,res) {
           }
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
-          else {
-            Database.find(query).limit(limit).exec(function(err, results) {
-              if(results.length > 1) {
-                datacube.push(results);
+          else if(req.query.averages == "true") {
+          
+
+            Database.aggregate([
+              { $match: query },
+              { $group: {
+                 '_id': "$properties.gw_basin_code",
+                 'averageGStoWS' : { '$avg' : "$properties.gs_to_ws" }
+                }
               }
-              else {
-                datacube.push(['none']);
+               
+              ],{limit: limit},function(err, results) {
+              if(results !== undefined) {
+                if(results.length > 1) {
+                  datacube.push(results);
+                }
+                else {
+                  datacube.push(['none']);
+                }
+              }
+              callback();
+            } );
+
+
+
+
+          }
+          else {
+            console.log(query);
+            Database.find(query).limit(limit).exec(function(err, results) {
+              if(results !== undefined) {
+                if(results.length > 1) {
+                  datacube.push(results);
+                }
+                else {
+                  datacube.push(['none']);
+                }
               }
               callback();
             });
@@ -201,12 +237,12 @@ exports.getResults = function(req,res) {
               fields : [
                 {
                   name : 'obj.properties.gs_to_ws',
-                  label : 'Ground surface to water surface',
+                  label : 'gs_to_ws',
                   filter : function(value) { return value; }
                 },
                 {
                   name : 'obj.id',
-                  label : 'ID',
+                  label : 'id',
                   filter : function(value) { return value; }
                 },
                 {

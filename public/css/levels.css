@@ -8,17 +8,29 @@
 path.well {
   fill: #000000;
   fill-opacity: .5;
+  z-index: 1000;
+}
+
+path:hover {
+  fill: blue;
+  fill-opacity: .3;
 }
 
 path.well:hover {
-  fill: brown;
+  fill: red;
   fill-opacity: .7;
 }
 
 
 .well-label {
   font-family: 'Questrial', sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   margin-top: 0px;
-  color: #0c0c0a;
+/*   color: #0c0c0a; */
+  fill: #b2570d;
+}
+
+
+.legend {
+  font-size: 12px;
 }
