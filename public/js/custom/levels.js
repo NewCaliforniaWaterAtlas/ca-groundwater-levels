@@ -3,9 +3,9 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '7/1/2010';
+levels.date_start = '7/1/2009';
 levels.date_end = '7/1/2011';
-levels.interval = 90;
+levels.interval = 6;
 levels.limit = 1000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
@@ -86,23 +86,38 @@ levels.setupInterface = function() {
 };
 
 levels.updateInterface = function() {
-  $('#slider').labeledslider({ 
-    max: levels.numberIntervals - 2, 
-    tickInterval: 1,
-    slide: function(event, ui) { 
-      levels.currentInterval = ui.value;
-      levels.loadInterval();
-    }
-  });  
+
+  labels = [];
+  for(var i in levels.dates) {
+    d = moment(levels.dates[i]).format("MM/DD/YYYY");
+    labels.push(d);
+  }
+  labels.pop();
+  labels.shift();
+  console.log(labels);
+
+  if ((levels.numberIntervals - 2) > 0) {
+    $('#slider').labeledslider({ 
+      max: levels.numberIntervals - 2, 
+      tickInterval: 1,
+      tickLabels: labels,
+      slide: function(event, ui) { 
+        levels.currentInterval = ui.value;
+        levels.loadInterval();
+      }
+    }); 
+  }
 };
 
 levels.display = function(error, aquifers, averages, wells) {
-  levels.numberIntervals = averages.length;
-  levels.aquifers = aquifers;
-  levels.averages = averages;
-  levels.wells = wells;
 
-  levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
+  levels.aquifers = aquifers;
+  levels.averages = averages.results;
+  levels.numberIntervals = levels.averages.length;
+/*   levels.wells = wells.results; */
+  levels.dates = averages.query.dates;
+
+  levels.differences = levels.processDifferences(levels.averages, levels.currentInterval);
   levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
   levels.updateInterface();
 };
@@ -110,8 +125,6 @@ levels.display = function(error, aquifers, averages, wells) {
 
 levels.loadInterval = function() {
   levels.differences = levels.processDifferences(levels.averages,levels.currentInterval);
-  console.log(levels.differences);
-  console.log(levels.currentInterval);
   levels.buildSubBasins(levels.aquifers, levels.differences, levels.wells, levels.currentInterval);
 };
 
@@ -273,7 +286,10 @@ levels.buildSubBasins = function(data, differences, wells, int) {
 levels.processDifferences = function(data,int) {
   // Build list of differences from one interval to the next (where they match)
   var int = levels.currentInterval;
+  console.log(int);
   var differences = [];
+
+  console.log(data);
 
   // Map of the two intervals.
   var data0 = d3.map(data[int]);
