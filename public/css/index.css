@@ -1,12 +1,4 @@
-
-.ncwa-badge {
-  position: fixed;
-  right: 0;
-  top: 0;
-  z-index: 1000;
-  width: 173px;
-  height: 173px;
-}
+/*<!-- ============ Global / Content ============ -->*/
 
 
 body {
@@ -14,6 +6,11 @@ body {
   font-size: 16px;
   margin-top: 0px;
   color: #0c0c0a;
+}
+
+.page-wrap {
+  width: 980px;
+  margin: 0 auto;
 }
 
 a {
@@ -26,6 +23,7 @@ a:hover,
 a:active {
   color:  #a05725;
 }
+
 .page-header {
   padding-bottom: 9px;
   margin: 0px 0 20px;
@@ -35,27 +33,22 @@ a:active {
 h1 {
   font-family: 'Rosario', sans-serif;
   font-weight: bold;
-  font-size: 2em;
-  line-height: 0.5em;
+  font-size: 2.75em;
+  line-height: 2.75em;
 }
 
 h2 {
   font-family: 'Rosario', sans-serif;
-  font-size: 1.4em;
-  line-height: 1.4em;
-  background-color: #dbd7ca;
-  width: 100%;
-  padding: 6px;
-  margin: 5px 0;
-  border-left: solid 3px #a2a18f;
+  font-size: 1.5em;
+  line-height: 1.5em;
 }
 
 .nav > li > a {
   font-family: 'Questrial', sans-serif;
-  font-size: 1.4em;
-  line-height: 1.4em;
+  font-size: 1.125em;
+  line-height: 1.125em;
   background-color: #dbd7ca;
-  width: 300px;
+  /*width: 300px;*/
   padding: 6px;
   margin: 5px 0;
   border: none;
@@ -80,4 +73,65 @@ h3,h4,h5,h6 {
 .menu {
   float: right;
   margin-right: 100px;
+}
+
+
+
+/*<!-- ============ Custom Styling ============ -->*/
+
+
+
+.ncwa-badge {
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+  width: 173px;
+  height: 173px;
+}
+
+.page-wrap {
+  margin: 50px auto;
+}
+
+ul.nav-tabs {
+  border-bottom: none;
+}
+
+h1.title {
+  line-height: 0em;
+}
+
+/*h2.sub-title {
+  line-height: 0em;
+}*/
+
+#carousel-example-generic {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+h2.bar-title {
+  font-family: 'Rosario', sans-serif;  
+  font-size: 1.5em;
+  line-height: 1.5em;
+  background-color: #dbd7ca;  
+  font-weight: bold;
+  width: 100%;
+  padding: 6px;
+}
+
+h2.bar {
+  font-family: 'Rosario', sans-serif;
+  font-size: 1.5em;
+  line-height: 1.5em;
+  background-color: #dbd7ca;
+  width: 100%;
+  padding: 6px;
+  margin: 70px 0;
+  border-left: solid 3px #a2a18f;
+}
+
+.row-group {
+  margin-top: 25px;
 }
