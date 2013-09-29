@@ -33,23 +33,29 @@ exports.list = function(req, res) {
 
 exports.buildDateRange = function (interval, date_start, date_end){
 
-  moment().format(); // @TODO necessary??
-
+  moment().format();
+  // 1, 2, 3, 4, 6 --- / 12  intervals
+  
   var intervals = [];
  
   // Build intervals for date range queries.  
   var a = moment(date_start);
   var b = moment(date_end);
 
-  for (var m = a; m.isBefore(b); m.add('days', interval)) {
+  var duration = moment.duration(interval, 'months');
+
+
+  for (var m = a; m.isBefore(b); m.add(duration)) {
     var year = m.format('YYYY');
     var day = m.format('D');
-    var month = m.format('M');
+    var month = m.format('M')-1;
     
     date = new Date(year, month, day);
     intervals.push(date);  // new Date(2012, 7, 14) -- necessary to lookup date in mongodb
   }
-
+  
+  bDate = new Date(b.format('YYYY'), b.format('M')-1, b.format('D'))
+  intervals.push(bDate);
   return intervals;
 }
 
@@ -68,7 +74,11 @@ exports.buildDateRange = function (interval, date_start, date_end){
 exports.getResults = function(req,res) {
 
   var _id, latitude, longitude, interval, date_start, date_end, intervals, limit, callback, gw_basin, hydrologic_unit
-  var datacube = [];
+  var datacube = {
+    fields: {},
+    query: {},
+    results: []
+  };
   var queries = []; 
   var JSONStream = require('JSONStream');  
   var query = {};
@@ -133,8 +143,13 @@ exports.getResults = function(req,res) {
     date_end_m = moment();
     date_end = date_end_m.format('M/D/YYYY');
   }
+  
+  console.log(date_start);
+  console.log(date_end);
   intervals = exports.buildDateRange(interval, date_start, date_end);
-
+  console.log(intervals);
+  
+  
   // Ignore records without a depth reading
 /*   query["properties.gs_to_ws"] = {$ne: "null"}; */
 /*   query["properties.gs_basin_name"] = {$ne: "null"}; */
@@ -154,16 +169,18 @@ exports.getResults = function(req,res) {
               Database.collection.geoNear(longitude, latitude, {query: query, num: limit, uniqueDocs: true }, function(err, results) { 
                 if(results.results !== undefined) {
                   if(results.results.length > 1) {
-                    var nodist = [];
+                    var nodistance = [];
                     for (var i in results.results){
                       obj = results.results[i].obj;
-                      nodist.push(obj);
+                      nodistance.push(obj);
                     }
-                    datacube.push(nodist);
+                    datacube.results.push(nodistance);
                   }
                   else {
-                    datacube.push(['']);
+                   /*  datacube.push(['']); */
                   }
+                  
+                  datacube.query.dates = intervals;
                   callback(); // @TODO is this the closure?
                 }
             });
@@ -182,14 +199,17 @@ exports.getResults = function(req,res) {
               }
                
               ],{limit: limit},function(err, results) {
+              
               if(results !== undefined) {
                 if(results.length > 1) {
-                  datacube.push(results);
+                  datacube.results.push(results);
                 }
                 else {
-                  datacube.push(['none']);
+/*                   datacube.push(['none']); */
                 }
               }
+              
+              datacube.query.dates = intervals;
               callback();
             } );
 
@@ -202,10 +222,10 @@ exports.getResults = function(req,res) {
             Database.find(query).limit(limit).exec(function(err, results) {
               if(results !== undefined) {
                 if(results.length > 1) {
-                  datacube.push(results);
+                  datacube.results.push(results);
                 }
                 else {
-                  datacube.push(['none']);
+/*                   datacube.push(['none']); */
                 }
               }
               callback();

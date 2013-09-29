@@ -60,15 +60,14 @@ h3,h4,h5,h6 {
   margin-right: 10px;
 }
 
-#date-start {
-
-  float: left;
+input.date-start {
   width: 150px;
 }
 
-#date-end {
-  float: left;
+input.date-end {
   width: 150px;
+  float: right;
+  right: 0;
 }
 
 .slider {

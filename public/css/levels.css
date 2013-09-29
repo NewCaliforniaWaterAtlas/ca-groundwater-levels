@@ -24,13 +24,31 @@ path.well:hover {
 .basins text,
 .well-label {
   font-family: 'Questrial', sans-serif;
-  font-size: 20px;
+  font-size: 12px;
   margin-top: 0px;
-/*   color: #0c0c0a; */
-  fill: #b2570d;
+  color: #0c0c0a;
+/*   fill: #b2570d; */
 }
 
 
 .legend-item {
   font-size: 12px;
 }
+
+.wrapper {
+   margin: auto;
+   position: relative;
+   width: 400px;
+   height: 400px;
+   margin-top: 10px;
+}
+
+.controls {
+   position: absolute;
+   bottom: 30px;
+   right: 0;
+   font-size: 8pt;
+   text-align: right;
+}
+.controls .clabel { font-size: .9em; }
+.ui-spinner { width: 4em; }
