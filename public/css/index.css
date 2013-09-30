@@ -8,10 +8,10 @@ body {
   color: #0c0c0a;
 }
 
-.page-wrap {
-  width: 980px;
+/*.page-wrap {
+  width: 792px;
   margin: 0 auto;
-}
+}*/
 
 a {
   color:  #a05725;
@@ -48,7 +48,6 @@ h2 {
   font-size: 1.125em;
   line-height: 1.125em;
   background-color: #dbd7ca;
-  /*width: 300px;*/
   padding: 6px;
   margin: 5px 0;
   border: none;
@@ -90,10 +89,6 @@ h3,h4,h5,h6 {
   height: 173px;
 }
 
-.page-wrap {
-  margin: 50px auto;
-}
-
 ul.nav-tabs {
   border-bottom: none;
 }
@@ -106,10 +101,10 @@ h1.title {
   line-height: 0em;
 }*/
 
-#carousel-example-generic {
+/*#carousel-example-generic {
   margin-left: -15px;
   margin-right: -15px;
-}
+}*/
 
 h2.bar-title {
   font-family: 'Rosario', sans-serif;  
@@ -134,4 +129,8 @@ h2.bar {
 
 .row-group {
   margin-top: 25px;
+}
+
+.teaser-text {
+  padding: 15px;
 }
