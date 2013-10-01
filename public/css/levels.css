@@ -30,6 +30,11 @@ path.well:hover {
 /*   fill: #b2570d; */
 }
 
+.ui-slider-label-ticks span {
+  font-size: 12px;
+  font-family: 'Questrial', sans-serif;
+  min-width: 1.2em;
+}
 
 .legend-item {
   font-size: 12px;
