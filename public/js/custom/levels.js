@@ -37,7 +37,10 @@ levels.gw_basin_code = '2-9.04'
 
 levels.buildMap = function() {
   // Load map
-  map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([levels.latitude, levels.longitude], 11);
+  var mapbox = 'chachasikes.map-8yllfvel';
+/*   var mapbox = 'examples.map-vyofok3q'; */
+  
+  map = L.mapbox.map('map', mapbox).setView([levels.latitude, levels.longitude], 11);
   
   // Make aquifer layer.
   var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
