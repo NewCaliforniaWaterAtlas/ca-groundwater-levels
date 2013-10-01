@@ -8,11 +8,6 @@ body {
   color: #0c0c0a;
 }
 
-/*.page-wrap {
-  width: 792px;
-  margin: 0 auto;
-}*/
-
 a {
   color:  #a05725;
   padding-bottom: 2px;
@@ -131,6 +126,12 @@ h2.bar {
   margin-top: 25px;
 }
 
+.row-break {
+  margin-top: 75px;
+}
+
 .teaser-text {
   padding: 15px;
+  height: 300px;
+  overflow: scroll;
 }
