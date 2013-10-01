@@ -94,12 +94,12 @@ exports.getResults = function(req,res) {
     // @TODO add lowercase search .toLower()?
   }
 
-  if(req.query.gw_basin !== undefined) {
-    query["properties.gw_basin"] = req.query.gw_basin; // interval is in number of days.
+  if(req.query.gw_basin_code !== undefined) {
+    query["properties.gw_basin_code"] = req.query.gw_basin_code;
   }
 
   if(req.query.hydrologic_unit !== undefined) {
-    query["properties.hydrologic_unit"] = req.query.hydrologic_unit; // interval is in number of days.
+    query["properties.hydrologic_unit"] = req.query.hydrologic_unit;
   }
 
   // Get lat & lon.
@@ -160,7 +160,7 @@ exports.getResults = function(req,res) {
     for(var r = 0; r < intervals.length-1; r++) {    
       queries.push((function(r){
           return function(callback) {
-          
+          query['properties.gs_to_ws'] = {$ne: "NULL"};
           query["properties.isodate"] = {"$gte" : intervals[r], "$lte": intervals[r+1]};
  
           // Get results near point.
@@ -188,18 +188,20 @@ exports.getResults = function(req,res) {
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else if(req.query.averages == "true") {
-          
 
             Database.aggregate([
               { $match: query },
               { $group: {
                  '_id': "$properties.gw_basin_code",
-                 'averageGStoWS' : { '$avg' : "$properties.gs_to_ws" }
+                 'averageGStoWS' : { '$avg' : "$properties.gs_to_ws" },
+                 'name' : { $addToSet : "$properties.gw_basin_name" },
+                 'min' : {'$min' : "$properties.gs_to_ws" },
+                 'max' : {'$max' : "$properties.gs_to_ws" }
                 }
               }
                
               ],{limit: limit},function(err, results) {
-              
+              console.log(err);
               if(results !== undefined) {
                 if(results.length > 1) {
                   datacube.results.push(results);
@@ -212,10 +214,6 @@ exports.getResults = function(req,res) {
               datacube.query.dates = intervals;
               callback();
             } );
-
-
-
-
           }
           else {
             console.log(query);
@@ -228,6 +226,7 @@ exports.getResults = function(req,res) {
 /*                   datacube.push(['none']); */
                 }
               }
+              datacube.query.dates = intervals;
               callback();
             });
           }
