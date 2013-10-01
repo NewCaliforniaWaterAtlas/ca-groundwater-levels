@@ -3,16 +3,16 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '1/1/2009';
+levels.date_start = '1/1/2010';
 levels.date_end = '12/31/2012';
 levels.interval = 12;
-levels.limit = 50;
+levels.limit = 500;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
 levels.labelPaddingY = 12;
 levels.currentInterval = 0;
-levels.gw_basin_code = '2-9.01'
+levels.gw_basin_code = '2-9.04'
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
 
@@ -37,7 +37,7 @@ levels.gw_basin_code = '2-9.01'
 
 levels.buildMap = function() {
   // Load map
-  map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([levels.latitude, levels.longitude], 6);
+  map = L.mapbox.map('map', 'examples.map-vyofok3q').setView([levels.latitude, levels.longitude], 11);
   
   // Make aquifer layer.
   var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
@@ -47,24 +47,25 @@ levels.buildMap = function() {
   map._initPathRoot()     
   
   levels.query = 
-            //'latitude='  + latitude
-            //+ '&longitude=' + longitude
-            //+ "&" +
             'limit=' + levels.limit
             + '&interval=' + levels.interval
             + '&date_start=' + levels.date_start
             + '&date_end=' + levels.date_end
             + '&format=' + levels.format
-            + '&gw_basin_code=' + levels.gw_basin_code
+
             ;
   
   levels.wellsQuery = levels.apiPath + levels.query;
   console.log(levels.wellsQuery);
   levels.averagesQuery = levels.apiPath + levels.query + '&averages=' + "true";
-/*  console.log( levels.averagesQuery)  */
+  levels.subbasinQuery = levels.apiPath + levels.query + '&gw_basin_code=' + levels.gw_basin_code;
+  levels.locationQuery = levels.apiPath + levels.query + '&latitude='  + levels.latitude + '&longitude=' + levels.longitude
+  
+  
+  levels.wellsQuery = levels.locationQuery;
+   console.log( levels.locationQuery) 
   
   // http://bl.ocks.org/KoGor/5685876
-/*
   levels.color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
   levels.color_domain = [-50, -25, 0, 25, 50]
   levels.ext_color_domain = [-100, -50, -25, 0, 25, 50]
@@ -72,11 +73,10 @@ levels.buildMap = function() {
   levels.color = d3.scale.threshold()
   .domain(levels.color_domain)
   .range(levels.color_range.reverse());
-*/
   
   queue()
       .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
-/*       .defer(d3.json, levels.averagesQuery) */
+      .defer(d3.json, levels.averagesQuery)
       .defer(d3.json, levels.wellsQuery)
       .await(levels.display);
 };
@@ -112,10 +112,10 @@ levels.updateInterface = function() {
   }
 };
 
-levels.display = function(error, aquifers, /* averages, */ wells) {
-/*   levels.differences = []; */
+levels.display = function(error, aquifers, averages, wells) {
+  levels.differences = [];
   levels.aquifers = aquifers;
-/*   levels.averages = averages.results; */
+  levels.averages = averages.results;
 
   levels.wells = wells.results;
   
@@ -126,64 +126,19 @@ levels.display = function(error, aquifers, /* averages, */ wells) {
   levels.wellsNested = [];
 
   for(var i = 0; i < levels.numberIntervals; i++ ){
-/*     levels.differences.push(levels.processDifferences(i));  */
-/*     levels.buildSubBasins(i); */
+    levels.differences.push(levels.processDifferences(i)); 
+    levels.buildSubBasins(i);
 
     levels.wellsNestedItem = d3.nest().key(function(d) { return d.geometry.coordinates; }).entries(levels.wells[i] );
 
     levels.wellsNested.push(levels.wellsNestedItem);
-    levels.buildWells(i);
-    console.log(i);
-  }
-  
-  
- /*
- var svg = d3.select("#map").select("svg");  
-  var width = 960,
-  height = 300;
-  var ls_w = 20, ls_h = 20;
-  
-  var legend = d3.select("#map").select("svg");
-  var legendGroup = svg.append("g").attr("class", "legend");
-    
-  var legendSVG = legendGroup.selectAll(".legend")
-  .data(levels.ext_color_domain)
-  .enter().append("g")
-  .attr("class", "legend-item");
-
-  legendSVG.append("rect")
-  .attr("x", 20)
-  .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
-  .attr("width", ls_w)
-  .attr("height", ls_h)
-  .style("fill", function(d, i) { return levels.color(d); })
-  .style("opacity", 0.8);
-
-  legendSVG.append("text")
-  .attr("x", 50)
-  .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
-  .text(function(d, i){ return levels.legend_labels[i]; });
-*/
-
-  
 
 
 
-
-  levels.updateInterface();
-  d3.selectAll(".basins").style("display", "none");
-  d3.select(".basin-" + levels.currentInterval).style("display", "block");    
-
-  d3.selectAll(".wells").style("display", "none");
-  d3.select(".well-" + levels.currentInterval).style("display", "block");   
-
-};
-
-levels.buildWells = function(int){
 
 
   var wellsLayer = d3.select("#map").select("svg");
-  var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + int);
+  var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
 
   function project(x) {
     var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
@@ -192,7 +147,7 @@ levels.buildWells = function(int){
 
   var path = d3.geo.path().projection(project);
 
-  var data = levels.wellsNested[int].map(function(d){
+  var data = levels.wellsNested[i].map(function(d){
 
     // if same well get the first in time record
     // if not the same well get the deepest.
@@ -225,12 +180,45 @@ levels.buildWells = function(int){
   .attr("y", function(d){
       return  path.centroid(d)[1] + levels.labelPaddingY;
   })  
-  .attr("class","well-label well-label-" + int);
+  .attr("class","well-label well-label-" + i);
+
+    console.log(i);
+  }
+  
+  
+  var svg = d3.select("#map").select("svg");  
+  var width = 960,
+  height = 300;
+  var ls_w = 20, ls_h = 20;
+  
+  var legend = d3.select("#map").select("svg");
+  var legendGroup = svg.append("g").attr("class", "legend");
+    
+  var legendSVG = legendGroup.selectAll(".legend")
+  .data(levels.ext_color_domain)
+  .enter().append("g")
+  .attr("class", "legend-item");
+
+  legendSVG.append("rect")
+  .attr("x", 20)
+  .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+  .attr("width", ls_w)
+  .attr("height", ls_h)
+  .style("fill", function(d, i) { return levels.color(d); })
+  .style("opacity", 0.8);
+
+  legendSVG.append("text")
+  .attr("x", 50)
+  .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+  .text(function(d, i){ return levels.legend_labels[i]; });
+
+  
+
+
 
 
   map.on("viewreset", function reset() {
 
-/*
       basinsSVG.attr("d",path);
 
       basinLabel.attr("x", function(d){
@@ -242,7 +230,6 @@ levels.buildWells = function(int){
       });  
 
       
-*/
       var zoom  = map.getZoom();
       
 /*       if(zoom > 8) { */
@@ -269,11 +256,29 @@ levels.buildWells = function(int){
 */
       
   });
+
+
+
+
+
+
+  levels.updateInterface();
+  d3.selectAll(".basins").style("display", "none");
+  d3.select(".basin-" + levels.currentInterval).style("display", "block");    
+
+  d3.selectAll(".wells").style("display", "none");
+  d3.select(".well-" + levels.currentInterval).style("display", "block");   
+
+};
+
+levels.buildWells = function(int){
+
+
   
 };
 
 levels.loadInterval = function() {
-/*   levels.buildSubBasins(levels.currentInterval); */
+
   d3.selectAll(".basins").style("display", "none");
   d3.select(".basin-" + levels.currentInterval).style("display", "block");
 
@@ -340,7 +345,7 @@ levels.processDifferences = function(int) {
 
   var data = levels.averages;
   
-/*   var int = levels.currentInterval; */
+  var int = levels.currentInterval;
 
   var differences = [];
 

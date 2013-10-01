@@ -160,7 +160,7 @@ exports.getResults = function(req,res) {
     for(var r = 0; r < intervals.length-1; r++) {    
       queries.push((function(r){
           return function(callback) {
-          
+          query['properties.gs_to_ws'] = {$ne: "NULL"};
           query["properties.isodate"] = {"$gte" : intervals[r], "$lte": intervals[r+1]};
  
           // Get results near point.
@@ -188,8 +188,6 @@ exports.getResults = function(req,res) {
           // Not a geographic search.
           // http://localhost:3000/watertable/v1/depth?limit=500
           else if(req.query.averages == "true") {
-            
-            query['properties.gs_to_ws'] = {$ne: "NULL"};
 
             Database.aggregate([
               { $match: query },
