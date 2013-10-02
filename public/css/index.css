@@ -11,7 +11,7 @@ body {
 a {
   color:  #a05725;
   padding-bottom: 2px;
-  border-bottom: 1px #d8a271 dotted;
+  /*border-bottom: 1px #d8a271 dotted;*/
 }
 
 a:hover,
@@ -40,8 +40,8 @@ h2 {
 
 .nav > li > a {
   font-family: 'Questrial', sans-serif;
-  font-size: 1.125em;
-  line-height: 1.125em;
+  font-size: 1.30em;
+  line-height: 1.30em;
   background-color: #dbd7ca;
   padding: 6px;
   margin: 5px 0;
@@ -130,8 +130,34 @@ h2.bar {
   margin-top: 75px;
 }
 
+.teaser-text-fade {
+  max-height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
 .teaser-text {
   padding: 15px;
-  height: 300px;
-  overflow: scroll;
+}
+
+.teaser-text-fade .read-more { 
+  position: absolute;
+  bottom: 0; 
+  height: 275px;
+  width: 100%; 
+  text-align: center; 
+  margin: 0px;  
+  
+  /* "transparent" only works here because == rgba(0,0,0,0) */ 
+  background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, transparent),color-stop(1, white));
+  background-image: -webkit-linear-gradient(top, transparent, white);
+  background-image: -moz-linear-gradient(top, transparent, white);
+  background-image: -ms-linear-gradient(top, transparent, white);
+  background-image: -o-linear-gradient(top, transparent, white);
+}
+
+.read-more a {
+  position: relative;
+  display: block;
+  margin: 250px auto;
 }
