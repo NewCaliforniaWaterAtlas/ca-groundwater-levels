@@ -130,7 +130,7 @@ levels.showAquifers = function(error, aquifers) {
         }
     })
     .attr("x", function(d){
-        return levels.projectionPath.centroid(d)[0]-50;
+        return levels.projectionPath.centroid(d)[0];
     })
     .attr("y", function(d){
         return  levels.projectionPath.centroid(d)[1];
@@ -144,7 +144,7 @@ levels.showAquifers = function(error, aquifers) {
       basinsSVG.attr("d",levels.projectionPath);
                 
       basinLabel.attr("x", function(d){
-          return levels.projectionPath.centroid(d)[0]-50;
+          return levels.projectionPath.centroid(d)[0];
       });
         
       basinLabel.attr("y", function(d){

@@ -29,6 +29,8 @@ path.well:hover {
   margin-top: 0px;
   color: #0c0c0a;
 /*   fill: #b2570d; */
+  
+  text-anchor: middle;
 }
 
 
@@ -44,7 +46,10 @@ g.basins[zoom="7"] text.basin-label {
 }
 
 g.basins[zoom="8"] text.basin-label,
-g.basins[zoom="9"] text.basin-label,
+g.basins[zoom="9"] text.basin-label{
+  display: block;
+  font-size: 8px;
+}
 g.basins[zoom="10"] text.basin-label,
 g.basins[zoom="11"] text.basin-label,
 g.basins[zoom="12"] text.basin-label {
