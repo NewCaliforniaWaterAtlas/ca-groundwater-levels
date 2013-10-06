@@ -1,9 +1,10 @@
 .basin { 
-  fill: #ddc;
-  stroke: #777;
+  fill: #ededed;
+  stroke: #ea8028;
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
 }
+
 
 path.well {
   fill: #000000;
@@ -29,6 +30,35 @@ path.well:hover {
   color: #0c0c0a;
 /*   fill: #b2570d; */
 }
+
+
+
+g.basins[zoom="1"] text.basin-label,
+g.basins[zoom="2"] text.basin-label,
+g.basins[zoom="3"] text.basin-label,
+g.basins[zoom="4"] text.basin-label,
+g.basins[zoom="5"] text.basin-label,
+g.basins[zoom="6"] text.basin-label,
+g.basins[zoom="7"] text.basin-label { 
+  display: none;
+}
+
+g.basins[zoom="8"] text.basin-label,
+g.basins[zoom="9"] text.basin-label,
+g.basins[zoom="10"] text.basin-label,
+g.basins[zoom="11"] text.basin-label,
+g.basins[zoom="12"] text.basin-label {
+  display: block;
+  font-size: 12px;
+
+}
+g.basins[zoom="13"] text.basin-label,
+g.basins[zoom="14"] text.basin-label { 
+  display: block;
+  font-size: 16px;
+}
+
+
 
 .ui-slider-label-ticks span {
   font-size: 12px;

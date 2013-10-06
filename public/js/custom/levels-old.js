@@ -38,9 +38,9 @@ levels.gw_basin_code = '2-9.04'
 levels.buildMap = function() {
   // Load map
 
-/*   var mapbox = 'chachasikes.map-8yllfvel'; */
+  var mapbox = 'chachasikes.map-8yllfvel';
   // chachasikes.map-oguxg9bo
-  var mapbox = 'examples.map-vyofok3q';
+/*   var mapbox = 'examples.map-vyofok3q'; */
   
   map = L.mapbox.map('map', mapbox).setView([levels.latitude, levels.longitude], 11);
   
@@ -78,97 +78,10 @@ levels.buildMap = function() {
   
   queue()
       .defer(d3.json, "./../data/topojson/dwr_basin_boundaries.json")
-/*       .defer(d3.json, levels.averagesQuery) */
-/*       .defer(d3.json, levels.wellsQuery) */
-      .await(levels.showAquifers);
+      .defer(d3.json, levels.averagesQuery)
+      .defer(d3.json, levels.wellsQuery)
+      .await(levels.display);
 };
-
-
-levels.project = function(x) {
-      var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
-      return [point.x, point.y];
-};
-  
-levels.projectionPath = d3.geo.path().projection(levels.project);
-
-levels.showAquifers = function(error, aquifers) {
-  levels.aquifers = aquifers;
-  levels.basins = topojson.feature(levels.aquifers, levels.aquifers.objects.database);
-
-  var zoom = map.getZoom();
-      
-
-  var svg = d3.select("#map").select("svg");
-  var b = svg.append("g").attr("class", "basins").attr("zoom", zoom);
-
-  var basinsSVG = b.append("g")
-  .attr("class", "basin")
-  .selectAll("path")
-  .data(levels.basins.features)
-  .enter().append("path")
-  .attr("d", levels.projectionPath)
-  .attr("basin-code", function(d){ return d.id})
-  .style("opacity", 0.8);
-
-
-  var basinLabel = b.selectAll("text")
-      .data(levels.basins.features)
-      .enter()
-      .append("svg:text")
-      .attr("class", "basin-label")
-      .text(function(d){
-        if(d.id !== undefined){
-          var output = "";
-          //if (d.properties.GWBASIN !== undefined) {
-          //  output += d.properties.GWBASIN;
-          //}
- 
-          if (d.properties.SUBNAME !== undefined) {
-            output += d.properties.SUBNAME;        
-          }
-          return output;
-        }
-    })
-    .attr("x", function(d){
-        return levels.projectionPath.centroid(d)[0]-50;
-    })
-    .attr("y", function(d){
-        return  levels.projectionPath.centroid(d)[1];
-    });
-
-
-  map.on("viewreset", function reset() {
-
-
-
-      basinsSVG.attr("d",levels.projectionPath);
-                
-      basinLabel.attr("x", function(d){
-          return levels.projectionPath.centroid(d)[0]-50;
-      });
-        
-      basinLabel.attr("y", function(d){
-            return  levels.projectionPath.centroid(d)[1];
-      });
-
-      var zoom = map.getZoom();
-      
-      b.attr("zoom", zoom);      
-      
-/*
-      if (zoom > 9) {
-        b.selectAll(".basin-label").style("visibility", "visible");      
-      }
-      else {
-        b.selectAll(".basin-label").style("visibility", "hidden");
-      }
-*/
-  });
-
-
-};
-
-
 
 levels.setupInterface = function() {
   $('.date-start').val(levels.date_start);
