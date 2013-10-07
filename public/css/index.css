@@ -44,6 +44,7 @@ h2 {
   line-height: 1.30em;
   background-color: #dbd7ca;
   padding: 6px;
+  padding-left: 12px;
   margin: 5px 0;
   border: none;
   border-left: solid 3px #a2a18f;
@@ -109,6 +110,7 @@ h2.bar-title {
   font-weight: bold;
   width: 100%;
   padding: 6px;
+  padding-left: 24px;
 }
 
 h2.bar {
@@ -160,4 +162,13 @@ h2.bar {
   position: relative;
   display: block;
   margin: 250px auto;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus {
+  background-color: #b7b7ad;
+  border-left: solid 3px #545348;
+}
+
+ul.nav-tabs>li>a.btn.btn-primary.btn-lg{
+  text-align: left;
 }
