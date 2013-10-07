@@ -85,14 +85,10 @@ svg[zoom="14"] text.basin-label {
 
 path.well {
   fill: #353535;
-  fill-opacity: .2;
+  fill-opacity: .3;
   z-index: 1000;
 }
 path.well:hover {
-/*
-  fill: red;
-  fill-opacity: .7;
-*/
 }
 path.well[well-use="Unknown"] {
   fill: #353535;

@@ -12,7 +12,7 @@ levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
 levels.labelPaddingY = 8;
 levels.currentInterval = 0;
-levels.gw_basin_code = '2-9.04';
+levels.gw_basin_code = '';
 levels.points = [];
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
@@ -74,10 +74,13 @@ levels.project = function(x) {
 levels.projectionPath = d3.geo.path().projection(levels.project).pointRadius(3);
 
 levels.aquiferClick = function(e){
+  levels.gw_basin_code_prev = levels.gw_basin_code;
   levels.gw_basin_code = e.id;
   console.log(e.id);
 
-
+/*   d3.select('.basin').on("click", levels.aquiferClick); */
+  d3.select('[basin-code="' + levels.gw_basin_code_prev + '"]').on("click", levels.aquiferClick);
+  d3.select('[basin-code="' + levels.gw_basin_code + '"]').on("click", null);
 
   d3.selectAll(".wells").remove();
   
@@ -157,10 +160,8 @@ levels.loadWells = function(error, wells){
   d3.selectAll(".wells").style("display", "none");
   d3.select(".well-" + levels.currentInterval).style("display", "block");   
 
-
- 
- map.fitBounds(levels.points);
- // map.fitBounds(wellsBounds.getBounds());
+  map.fitBounds(levels.points);
+  // map.fitBounds(wellsBounds.getBounds());
 
  
   map.on("viewreset", function reset() {
@@ -170,6 +171,7 @@ levels.loadWells = function(error, wells){
     wellsRendered.attr("d",levels.projectionPath);
     
     var wellsLabelsRendered = d3.select("#map").select("svg").selectAll(".well-label");
+
     wellsLabelsRendered.attr("x", function(d){
       return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
     });
@@ -240,7 +242,7 @@ levels.showAquifers = function(error, aquifers) {
 
   
 
-  map.on("moveend", function reset() {
+  map.on("viewreset", function reset() {
 
       basinsSVG.attr("d",levels.projectionPath);
                 
