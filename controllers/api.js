@@ -160,7 +160,7 @@ exports.getResults = function(req,res) {
     for(var r = 0; r < intervals.length-1; r++) {    
       queries.push((function(r){
           return function(callback) {
-          query['properties.gs_to_ws'] = {$ne: "NULL"};
+
           query["properties.isodate"] = {"$gte" : intervals[r], "$lte": intervals[r+1]};
  
           // Get results near point.
@@ -189,6 +189,8 @@ exports.getResults = function(req,res) {
           // http://localhost:3000/watertable/v1/depth?limit=500
           else if(req.query.averages == "true") {
 
+          query['properties.gs_to_ws'] = {$ne: "NULL"};
+
             Database.aggregate([
               { $match: query },
               { $group: {
@@ -216,14 +218,15 @@ exports.getResults = function(req,res) {
             } );
           }
           else {
-            console.log(query);
+
             Database.find(query).limit(limit).exec(function(err, results) {
-              if(results !== undefined) {
+
+                if(results !== undefined) {
                 if(results.length > 1) {
                   datacube.results.push(results);
                 }
                 else {
-/*                   datacube.push(['none']); */
+                  datacube.results.push([]);
                 }
               }
               datacube.query.dates = intervals;

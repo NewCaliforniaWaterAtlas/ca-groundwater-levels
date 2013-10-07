@@ -3,24 +3,17 @@
   stroke: #ea8028;
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
+
+}
+
+.basin path{
+  fill-opacity: 0.6;
+}
+.basin path:hover {
+  fill-opacity: 0;
 }
 
 
-path.well {
-  fill: #000000;
-  fill-opacity: .5;
-  z-index: 1000;
-}
-
-path:hover {
-  fill: blue;
-  fill-opacity: .3;
-}
-
-path.well:hover {
-  fill: red;
-  fill-opacity: .7;
-}
 
 .basins text,
 .well-label {
@@ -28,42 +21,136 @@ path.well:hover {
   font-size: 12px;
   margin-top: 0px;
   color: #0c0c0a;
-/*   fill: #b2570d; */
-  
+  fill-opacity: .7;
   text-anchor: middle;
 }
 
-
-
-g.basins[zoom="1"] text.basin-label,
-g.basins[zoom="2"] text.basin-label,
-g.basins[zoom="3"] text.basin-label,
-g.basins[zoom="4"] text.basin-label,
-g.basins[zoom="5"] text.basin-label,
-g.basins[zoom="6"] text.basin-label,
-g.basins[zoom="7"] text.basin-label { 
+svg[zoom="1"] text.well-label,
+svg[zoom="2"] text.well-label,
+svg[zoom="3"] text.well-label,
+svg[zoom="4"] text.well-label,
+svg[zoom="5"] text.well-label,
+svg[zoom="6"] text.well-label,
+svg[zoom="7"] text.well-label { 
   display: none;
 }
 
-g.basins[zoom="8"] text.basin-label,
-g.basins[zoom="9"] text.basin-label{
+svg[zoom="8"] text.well-label,
+svg[zoom="9"] text.well-label{
+  display: none;
+}
+svg[zoom="10"] text.well-label,
+svg[zoom="11"] text.well-label,
+svg[zoom="12"] text.well-label {
+  display: block;
+  font-size: 10px;
+
+}
+svg[zoom="13"] text.well-label,
+svg[zoom="14"] text.well-label { 
+  display: block;
+  font-size: 12px;
+}
+
+
+
+svg[zoom="1"] text.basin-label,
+svg[zoom="2"] text.basin-label,
+svg[zoom="3"] text.basin-label,
+svg[zoom="4"] text.basin-label,
+svg[zoom="5"] text.basin-label,
+svg[zoom="6"] text.basin-label,
+svg[zoom="7"] text.basin-label { 
+  display: none;
+}
+
+svg[zoom="8"] text.basin-label,
+svg[zoom="9"] text.basin-label{
   display: block;
   font-size: 8px;
 }
-g.basins[zoom="10"] text.basin-label,
-g.basins[zoom="11"] text.basin-label,
-g.basins[zoom="12"] text.basin-label {
+svg[zoom="10"] text.basin-label,
+svg[zoom="11"] text.basin-label,
+svg[zoom="12"] text.basin-label {
   display: block;
   font-size: 12px;
 
 }
-g.basins[zoom="13"] text.basin-label,
-g.basins[zoom="14"] text.basin-label { 
+svg[zoom="13"] text.basin-label,
+svg[zoom="14"] text.basin-label { 
   display: block;
   font-size: 16px;
 }
 
 
+path.well {
+  fill: #353535;
+  fill-opacity: .3;
+  z-index: 1000;
+}
+path.well:hover {
+}
+path.well[well-use="Unknown"] {
+  fill: #353535;
+}
+path.well[well-use="Residential"] {
+  fill: #eac928;
+  fill-opacity: .8;
+}
+path.well[well-use="Irrigation"] {
+  fill: #16c116;
+  fill-opacity: .8;
+}
+path.well[well-use="Industrial"] {
+  fill: #60c8e8;
+  fill-opacity: .8;
+}
+path.well[well-use="Observation"] {
+  fill: #476ad6;
+  fill-opacity: .8;
+}
+path.well[well-use="Other"] {
+  fill: #606060;
+}
+path.well[well-use="Stockwatering"] {
+  fill: #ad8853;
+  fill-opacity: .8;
+}
+
+.ui-corner-all {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+a.ui-slider-handle.ui-state-default,
+a.ui-slider-handle.ui-state-active,
+a.ui-slider-handle.ui-state-hover {
+  background: #a0a0a0;
+  outline: none;
+  margin-left: 0px;
+  height: 15px;
+  border: none;
+  box-shadow: 5px 5px 5px #efefef;
+}
+
+
+a.ui-slider-handle.ui-state-active {
+  background: #b5b5b5;
+}
+a.ui-slider-handle.ui-state-hover {
+  background: #b5b5b5;
+}
+
+#slider-container {
+  width: 50%;
+  margin: 10px;
+}
+#slider {
+  background: none;
+  border: none;
+}
 
 .ui-slider-label-ticks span {
   font-size: 12px;

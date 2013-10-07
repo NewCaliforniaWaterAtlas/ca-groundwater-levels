@@ -58,17 +58,20 @@ Drag the slider through time to see how groundwater levels rise and fall in Cali
         </div>
       </form>
       <div class="row">
-        <div class="col-md-3">
-                <input type="text" id="datepicker-start" class="date-start" />
-        </div>
+        <div class="col-md-2">
 
-        <div class="col-md-6">
-          <div id="slider"></div>
-        </div>
-                
-        <div class="col-md-3">
+          <input type="text" id="datepicker-start" class="date-start" />
           <input type="text" id="datepicker-end" class="date-end" />
         </div>
+
+        <div class="col-md-10">
+          <div class="alert"></div>
+          <div id="slider-container">
+            <div id="slider"></div>
+          </div>
+        </div>
+                
+
       </div>
       <div class="row">
         <div id="map"></div>
@@ -130,6 +133,7 @@ Drag the slider through time to see how groundwater levels rise and fall in Cali
     
     <script src="js/libraries/queue.min.js"></script>    
     <script src="js/custom/levels.js"></script>
+<!--
 
     <script type="text/javascript">
     
@@ -145,6 +149,7 @@ Drag the slider through time to see how groundwater levels rise and fall in Cali
       })();
     
     </script>
+-->
 
   </body>
 </html>
