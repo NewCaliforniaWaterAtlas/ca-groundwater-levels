@@ -218,8 +218,9 @@ exports.getResults = function(req,res) {
             } );
           }
           else {
+            // @TODO this is broken, but would be better if we could exclude wells with bo measurements.
 /*             query["properties.gs_to_ws"] = {$ne:null, $exists: true}; */
-            
+            // @TODO can mongoose ask mongo to emit select fields so data is smaller?
             Database.find(query)
             .limit(limit)
             .exec(function(err, results) {

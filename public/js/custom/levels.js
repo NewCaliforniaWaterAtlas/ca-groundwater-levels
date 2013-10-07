@@ -10,7 +10,7 @@ levels.date_start = '1/01/1995';
 levels.date_end = '12/31/2012';
 
 levels.interval = 6;
-levels.limit = 1000;
+levels.limit = 700;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
