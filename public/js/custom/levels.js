@@ -3,10 +3,14 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '3/01/2008';
-levels.date_end = '3/01/2013';
-levels.interval = 12;
-levels.limit = 5000;
+levels.date_start = '10/01/1995';
+levels.date_end = '9/30/2012';
+
+levels.date_start = '1/01/1995';
+levels.date_end = '12/31/2012';
+
+levels.interval = 6;
+levels.limit = 1000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
@@ -105,56 +109,63 @@ levels.loadWells = function(error, wells){
   
   levels.currentLevel = 0;
   levels.updateInterface();
-  console.log(wells);
   levels.wells = wells.results;
   
   levels.numberIntervals = levels.wells.length;
   levels.dates = wells.query.dates;
 
   levels.wellsNested = [];
-
+    if(wells.results.length > 1) {
   for(var i = 0; i < levels.numberIntervals; i++ ){
-    levels.wellsNestedItem = d3.nest().key(function(d) { return d.geometry.coordinates; }).entries(levels.wells[i] );
-
-    levels.wellsNested.push(levels.wellsNestedItem);
-
-    var wellsLayer = d3.select("#map").select("svg");
-    var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
-
-    var data = levels.wellsNested[i].map(function(d){
-      // if same well get the first in time record
-      // if not the same well get the deepest. 
-      return d.values[0] // get first value
-    });
+      levels.wellsNestedItem = d3.nest().key(function(d) { 
+          if(d.properties.gs_to_ws !== undefined){
+            return d.geometry.coordinates;
+          }}
+          ).entries(levels.wells[i] );
   
-    var well = wellsGroup.selectAll("path")
-      .data(data)
+      levels.wellsNested.push(levels.wellsNestedItem);
   
-      .enter()
-      .append("path")
-      .attr("d", levels.projectionPath)
-      .attr("class", "well")
-      .attr("well-use", function(d) { console.log(d); return d.properties.well_use;} );
+      var wellsLayer = d3.select("#map").select("svg");
+      var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
   
-    // @TODO needs layer.
-    var wellLabel = wellsGroup.selectAll("text")
-      .data(data)
-      .enter()
-      .append("svg:text")
-      .text(function(d){
-        if(d.properties.gs_to_ws !== undefined) {
-          return Math.floor(d.properties.gs_to_ws);
-        }
-    })
-    .attr("x", function(d){
-        return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
-    })
-    .attr("y", function(d){
-        return  levels.projectionPath.centroid(d)[1] + levels.labelPaddingY;
-    })  
-    .attr("class","well-label well-label-" + i);
-  }
- 
+      var data = levels.wellsNested[i].map(function(d){
+        // if same well get the first in time record
+        // if not the same well get the deepest. 
+        return d.values[0] // get first value
+      });
+    
+      var well = wellsGroup.selectAll("path")
+        .data(data)
+        .enter()
+        .append("path")
+        .attr("d", levels.projectionPath)
+        .attr("class", "well")
+        .attr("well-use", function(d) { return d.properties.well_use;} );
+    
+      // @TODO needs layer.
+      var wellLabel = wellsGroup.selectAll("text")
+        .data(data)
+        .enter()
+        .append("svg:text")
+        .text(function(d){
+
+          if(d.properties.gs_to_ws !== undefined) {
+
+
+            return Math.floor(d.properties.gs_to_ws);
+          }
+          else {
+          }
+      })
+      .attr("x", function(d){
+          return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
+      })
+      .attr("y", function(d){
+          return  levels.projectionPath.centroid(d)[1] + levels.labelPaddingY;
+      })  
+      .attr("class","well-label well-label-" + i);
+    }
+
   levels.updateInterface();
 
   d3.selectAll(".wells").style("display", "none");
@@ -189,7 +200,9 @@ levels.loadWells = function(error, wells){
 
   });
 
-   $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
+  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
+   
+  }
 };
 
 
@@ -277,7 +290,7 @@ levels.updateInterface = function() {
 
   levels.dateLabels = [];
   for(var i in levels.dates) {
-    d = moment(levels.dates[i]).format("MM/DD/YYYY");
+    d = moment(levels.dates[i]).format("MM/YY");
     levels.dateLabels.push(d);
   }
 /*   levels.dateLabels.pop(); */
@@ -287,6 +300,7 @@ levels.updateInterface = function() {
     $('#slider').labeledslider({ 
       max: levels.numberIntervals - 1, 
       tickInterval: 1,
+      step: 2,
       tickLabels: levels.dateLabels,
       slide: function(event, ui) { 
         console.log(event);
@@ -305,7 +319,7 @@ levels.updateInterface = function() {
 */
   var tickWidth = Math.round( 1 / (levels.numberIntervals-1) * 10000 ) / 100;
 
-  $('.ui-slider .ui-slider-handle').css('width', tickWidth + '%');
+/*   $('.ui-slider .ui-slider-handle').css('width', tickWidth + '%'); */
 $('.horizontal .ui-slider-labels').append('<div class="ui-slider-label-ticks" style="left: ' + (tickWidth + 100) + '%;"><span>' + levels.dateLabels[levels.dateLabels.length - 1 ] + '</span></div>')
 
 };

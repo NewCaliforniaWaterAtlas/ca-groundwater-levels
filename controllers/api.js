@@ -177,7 +177,7 @@ exports.getResults = function(req,res) {
                     datacube.results.push(nodistance);
                   }
                   else {
-                   /*  datacube.push(['']); */
+                    datacube.results.push([]);
                   }
                   
                   datacube.query.dates = intervals;
@@ -189,7 +189,7 @@ exports.getResults = function(req,res) {
           // http://localhost:3000/watertable/v1/depth?limit=500
           else if(req.query.averages == "true") {
 
-          query['properties.gs_to_ws'] = {$ne: "NULL"};
+
 
             Database.aggregate([
               { $match: query },
@@ -209,7 +209,7 @@ exports.getResults = function(req,res) {
                   datacube.results.push(results);
                 }
                 else {
-/*                   datacube.push(['none']); */
+                  datacube.results.push([]);
                 }
               }
               
@@ -218,10 +218,13 @@ exports.getResults = function(req,res) {
             } );
           }
           else {
+/*             query["properties.gs_to_ws"] = {$ne:null, $exists: true}; */
+            
+            Database.find(query)
+            .limit(limit)
+            .exec(function(err, results) {
 
-            Database.find(query).limit(limit).exec(function(err, results) {
-
-                if(results !== undefined) {
+              if(results !== undefined) {
                 if(results.length > 1) {
                   datacube.results.push(results);
                 }
