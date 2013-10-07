@@ -3,9 +3,9 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '4/1/2013';
+levels.date_start = '4/1/2010';
 levels.date_end = '6/30/2013';
-levels.interval = 3;
+levels.interval = 12;
 levels.limit = 50;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
@@ -16,24 +16,7 @@ levels.gw_basin_code = '2-9.04'
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
 
-// on submit
-// get address
-// geocode it
-// get lat lon
-// get current date range
-// default interval - 365
-// construct search query
-// get back results
-// start map at the beginning
-
-// plot wells
-// add numbers to wells
-// by subbasin, construct average number
-// plot color
-// set color of aquifer
-
-// on change time slider, load selected interval
-// update map
+// @TODO add disclaimer - won't work in IE
 
 levels.buildMap = function() {
   // Load map
@@ -62,10 +45,7 @@ levels.buildMap = function() {
   levels.averagesQuery = levels.apiPath + levels.query + '&averages=' + "true";
   levels.subbasinQuery = levels.apiPath + levels.query + '&gw_basin_code=' + levels.gw_basin_code;
   levels.locationQuery = levels.apiPath + levels.query + '&latitude='  + levels.latitude + '&longitude=' + levels.longitude
-  
-  
   levels.wellsQuery = levels.locationQuery;
-   console.log( levels.locationQuery) 
   
   // http://bl.ocks.org/KoGor/5685876
   levels.color_range = ["#33838e", "#a1dde5", "#efefef", "#ff7d73", "#ff4e40", "#ff1300"];
@@ -91,6 +71,110 @@ levels.project = function(x) {
   
 levels.projectionPath = d3.geo.path().projection(levels.project);
 
+levels.aquiferClick = function(e){
+  levels.gw_basin_code = e.id;
+  console.log(e.id);
+
+  d3.selectAll(".wells").remove();
+  
+  levels.query = 
+            'limit=' + levels.limit
+            + '&interval=' + levels.interval
+            + '&date_start=' + levels.date_start
+            + '&date_end=' + levels.date_end
+            + '&format=' + levels.format;
+  
+  levels.subbasinQuery = levels.apiPath + levels.query + '&gw_basin_code=' + levels.gw_basin_code;
+  console.log(levels.subbasinQuery);
+
+  queue()
+      .defer(d3.json, levels.subbasinQuery)
+      .await(levels.loadWells); 
+
+};
+
+levels.loadWells = function(error, wells){
+
+  
+  levels.currentLevel = 0;
+  levels.updateInterface();
+
+  levels.wells = wells.results;
+  
+  levels.numberIntervals = levels.wells.length;
+  levels.dates = wells.query.dates;
+
+  levels.wellsNested = [];
+
+  for(var i = 0; i < levels.numberIntervals; i++ ){
+    levels.wellsNestedItem = d3.nest().key(function(d) { return d.geometry.coordinates; }).entries(levels.wells[i] );
+
+    levels.wellsNested.push(levels.wellsNestedItem);
+
+    var wellsLayer = d3.select("#map").select("svg");
+    var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
+
+    var data = levels.wellsNested[i].map(function(d){
+      // if same well get the first in time record
+      // if not the same well get the deepest. 
+      return d.values[0] // get first value
+    });
+  
+    var well = wellsGroup.selectAll("path")
+      .data(data)
+  
+      .enter()
+      .append("path")
+      .attr("d", levels.projectionPath)
+      .attr("class", "well");
+  
+    // @TODO needs layer.
+    var wellLabel = wellsGroup.selectAll("text")
+      .data(data)
+      .enter()
+      .append("svg:text")
+      .text(function(d){
+        if(d.properties.gs_to_ws !== undefined) {
+          return Math.floor(d.properties.gs_to_ws);
+        }
+    })
+    .attr("x", function(d){
+        return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
+    })
+    .attr("y", function(d){
+        return  levels.projectionPath.centroid(d)[1] + levels.labelPaddingY;
+    })  
+    .attr("class","well-label well-label-" + i);
+  }
+ 
+  levels.updateInterface();
+
+  d3.selectAll(".wells").style("display", "none");
+  d3.select(".well-" + levels.currentInterval).style("display", "block");   
+
+ 
+  map.on("viewreset", function reset() {
+
+    well.attr("d",levels.projectionPath);
+    
+    wellLabel.attr("x", function(d){
+      return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
+    });
+    
+    wellLabel.attr("y", function(d){
+        return  levels.projectionPath.centroid(d)[1] + levels.labelPaddingY;
+    });
+
+    d3.selectAll(".wells").style("display", "none");
+    d3.select(".well-" + levels.currentInterval).style("display", "block");   
+
+
+  });
+
+ 
+};
+
+
 levels.showAquifers = function(error, aquifers) {
   levels.aquifers = aquifers;
   levels.basins = topojson.feature(levels.aquifers, levels.aquifers.objects.database);
@@ -108,8 +192,7 @@ levels.showAquifers = function(error, aquifers) {
   .enter().append("path")
   .attr("d", levels.projectionPath)
   .attr("basin-code", function(d){ return d.id})
-  .style("opacity", 0.8);
-
+  .on("click", levels.aquiferClick); 
 
   var basinLabel = b.selectAll("text")
       .data(levels.basins.features)
@@ -137,9 +220,9 @@ levels.showAquifers = function(error, aquifers) {
     });
 
 
-  map.on("viewreset", function reset() {
+  
 
-
+  map.on("moveend", function reset() {
 
       basinsSVG.attr("d",levels.projectionPath);
                 
@@ -151,24 +234,11 @@ levels.showAquifers = function(error, aquifers) {
             return  levels.projectionPath.centroid(d)[1];
       });
 
-      var zoom = map.getZoom();
-      
-      b.attr("zoom", zoom);      
-      
-/*
-      if (zoom > 9) {
-        b.selectAll(".basin-label").style("visibility", "visible");      
-      }
-      else {
-        b.selectAll(".basin-label").style("visibility", "hidden");
-      }
-*/
+      // Set zoom level. Interacts with CSS.
+      var zoom = map.getZoom();      
+      b.attr("zoom", zoom);
   });
-
-
 };
-
-
 
 levels.setupInterface = function() {
   $('.date-start').val(levels.date_start);
@@ -179,6 +249,13 @@ levels.setupInterface = function() {
 };
 
 levels.updateInterface = function() {
+  try{
+    $('#slider').labeledslider("destroy");
+  }
+  catch(err)
+  {
+  //Handle errors here
+  }
 
   labels = [];
   for(var i in levels.dates) {
@@ -188,9 +265,9 @@ levels.updateInterface = function() {
   labels.pop();
   labels.shift();
 
-  if ((levels.numberIntervals - 2) > 0) {
+  if ((levels.numberIntervals - 1) > 0) {
     $('#slider').labeledslider({ 
-      max: levels.numberIntervals - 2, 
+      max: levels.numberIntervals - 1, 
       tickInterval: 1,
       tickLabels: labels,
       slide: function(event, ui) { 
@@ -201,177 +278,12 @@ levels.updateInterface = function() {
   }
 };
 
-levels.display = function(error, aquifers, averages, wells) {
-  levels.differences = [];
-  levels.aquifers = aquifers;
-  levels.averages = averages.results;
-
-  levels.wells = wells.results;
-  
-
-  levels.numberIntervals = levels.wells.length;
-  levels.dates = wells.query.dates;
-  levels.basins = topojson.feature(levels.aquifers, levels.aquifers.objects.database);
-  levels.wellsNested = [];
-
-  for(var i = 0; i < levels.numberIntervals; i++ ){
-    //levels.differences.push(levels.processDifferences(i)); 
-    
-    levels.buildSubBasins(i);
-
-    levels.wellsNestedItem = d3.nest().key(function(d) { return d.geometry.coordinates; }).entries(levels.wells[i] );
-
-    levels.wellsNested.push(levels.wellsNestedItem);
-
-    var wellsLayer = d3.select("#map").select("svg");
-    var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
-
-    function project(x) {
-      var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
-      return [point.x, point.y];
-    }
-  
-    var path = d3.geo.path().projection(project);
-  
-    var data = levels.wellsNested[i].map(function(d){
-  
-      // if same well get the first in time record
-      // if not the same well get the deepest.
-    
-      return d.values[0] // get first value
-    
-    });
-  
-    var well = wellsGroup.selectAll("path")
-      .data(data)
-  
-      .enter()
-      .append("path")
-      .attr("d",  path)
-      .attr("class", "well");
-  
-    // @TODO needs layer.
-    var wellLabel = wellsGroup.selectAll("text")
-      .data(data)
-      .enter()
-      .append("svg:text")
-      .text(function(d){
-        if(d.properties.gs_to_ws !== undefined) {
-          return Math.floor(d.properties.gs_to_ws);
-        }
-    })
-    .attr("x", function(d){
-        return path.centroid(d)[0] + levels.labelPaddingX;
-    })
-    .attr("y", function(d){
-        return  path.centroid(d)[1] + levels.labelPaddingY;
-    })  
-    .attr("class","well-label well-label-" + i);
-  
-      console.log(i);
-    }
-    
-    
-    var svg = d3.select("#map").select("svg");  
-    var width = 960,
-    height = 300;
-    var ls_w = 20, ls_h = 20;
-    
-    var legend = d3.select("#map").select("svg");
-    var legendGroup = svg.append("g").attr("class", "legend");
-      
-    var legendSVG = legendGroup.selectAll(".legend")
-    .data(levels.ext_color_domain)
-    .enter().append("g")
-    .attr("class", "legend-item");
-  
-    legendSVG.append("rect")
-    .attr("x", 20)
-    .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
-    .attr("width", ls_w)
-    .attr("height", ls_h)
-    .style("fill", function(d, i) { return levels.color(d); })
-    .style("opacity", 0.8);
-  
-    legendSVG.append("text")
-    .attr("x", 50)
-    .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
-    .text(function(d, i){ return levels.legend_labels[i]; });
-  
-    
-  
-  
-  
-  
-    map.on("viewreset", function reset() {
-  
-        basinsSVG.attr("d",path);
-  
-        basinLabel.attr("x", function(d){
-            return path.centroid(d)[0];
-        });
-          
-        basinLabel.attr("y", function(d){
-              return  path.centroid(d)[1];
-        });  
-  
-        
-        var zoom  = map.getZoom();
-        
-  /*       if(zoom > 8) { */
-        
-          well.attr("d",path);
-     
-          wellLabel.attr("x", function(d){
-            return path.centroid(d)[0] + levels.labelPaddingX;
-          });
-          
-          wellLabel.attr("y", function(d){
-              return  path.centroid(d)[1] + levels.labelPaddingY;
-          });      
-  
-  /*
-        }
-        else {
-          d3.selectAll(".well")
-            .remove();
-            
-          d3.selectAll(".well-label")
-            .remove();
-        }
-  */
-        
-    });
-  
-  
-  
-  
-  
-  
-    levels.updateInterface();
-    d3.selectAll(".basins").style("display", "none");
-    d3.select(".basin-" + levels.currentInterval).style("display", "block");    
-  
-    d3.selectAll(".wells").style("display", "none");
-    d3.select(".well-" + levels.currentInterval).style("display", "block");   
-
-};
-
-levels.buildWells = function(int){
-
-
-  
-};
-
 levels.loadInterval = function() {
-
-  d3.selectAll(".basins").style("display", "none");
-  d3.select(".basin-" + levels.currentInterval).style("display", "block");
-
   d3.selectAll(".wells").style("display", "none");
   d3.select(".well-" + levels.currentInterval).style("display", "block");
 };
 
+/*
 levels.buildSubBasins = function(int) {
  
   var currentDifference = levels.differences[int];
@@ -423,8 +335,10 @@ levels.buildSubBasins = function(int) {
       return  path.centroid(d)[1];
   })
 };
+*/
 
 
+/*
 
 levels.processDifferences = function(int) {
   // Build list of differences from one interval to the next (where they match)
@@ -462,6 +376,7 @@ levels.processDifferences = function(int) {
 
   return differences;  
 };
+*/
 /*
 
 levels.showWells = function(data) {
@@ -573,4 +488,152 @@ levels.buildMap();
         function daysDiff(d1, d2) {
             return  Math.floor((d2.getTime() - d1.getTime()) / 86400000);
         }
+*/
+
+
+
+/*
+
+levels.display = function(error, aquifers, averages, wells) {
+  levels.differences = [];
+  levels.aquifers = aquifers;
+  levels.averages = averages.results;
+
+  levels.wells = wells.results;
+  
+  levels.numberIntervals = levels.wells.length;
+  levels.dates = wells.query.dates;
+  levels.basins = topojson.feature(levels.aquifers, levels.aquifers.objects.database);
+  levels.wellsNested = [];
+
+  for(var i = 0; i < levels.numberIntervals; i++ ){
+    //levels.differences.push(levels.processDifferences(i)); 
+    
+    levels.buildSubBasins(i);
+
+    levels.wellsNestedItem = d3.nest().key(function(d) { return d.geometry.coordinates; }).entries(levels.wells[i] );
+
+    levels.wellsNested.push(levels.wellsNestedItem);
+
+    var wellsLayer = d3.select("#map").select("svg");
+    var wellsGroup = wellsLayer.append("g").attr("class", "wells well-" + i);
+
+    function project(x) {
+      var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
+      return [point.x, point.y];
+    }
+  
+    var path = d3.geo.path().projection(project);
+  
+    var data = levels.wellsNested[i].map(function(d){
+  
+      // if same well get the first in time record
+      // if not the same well get the deepest.
+    
+      return d.values[0] // get first value
+    
+    });
+  
+    var well = wellsGroup.selectAll("path")
+      .data(data)
+  
+      .enter()
+      .append("path")
+      .attr("d",  path)
+      .attr("class", "well");
+  
+    // @TODO needs layer.
+    var wellLabel = wellsGroup.selectAll("text")
+      .data(data)
+      .enter()
+      .append("svg:text")
+      .text(function(d){
+        if(d.properties.gs_to_ws !== undefined) {
+          return Math.floor(d.properties.gs_to_ws);
+        }
+    })
+    .attr("x", function(d){
+        return path.centroid(d)[0] + levels.labelPaddingX;
+    })
+    .attr("y", function(d){
+        return  path.centroid(d)[1] + levels.labelPaddingY;
+    })  
+    .attr("class","well-label well-label-" + i);
+  
+      console.log(i);
+    }
+    
+    
+    var svg = d3.select("#map").select("svg");  
+    var width = 960,
+    height = 300;
+    var ls_w = 20, ls_h = 20;
+    
+    var legend = d3.select("#map").select("svg");
+    var legendGroup = svg.append("g").attr("class", "legend");
+      
+    var legendSVG = legendGroup.selectAll(".legend")
+    .data(levels.ext_color_domain)
+    .enter().append("g")
+    .attr("class", "legend-item");
+  
+    legendSVG.append("rect")
+    .attr("x", 20)
+    .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+    .attr("width", ls_w)
+    .attr("height", ls_h)
+    .style("fill", function(d, i) { return levels.color(d); })
+    .style("opacity", 0.8);
+  
+    legendSVG.append("text")
+    .attr("x", 50)
+    .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+    .text(function(d, i){ return levels.legend_labels[i]; });
+  
+    
+  
+  
+  
+  
+    map.on("viewreset", function reset() {
+  
+        basinsSVG.attr("d",path);
+  
+        basinLabel.attr("x", function(d){
+            return path.centroid(d)[0];
+        });
+          
+        basinLabel.attr("y", function(d){
+              return  path.centroid(d)[1];
+        });  
+  
+        
+        var zoom  = map.getZoom();
+        
+
+        
+          well.attr("d",path);
+     
+          wellLabel.attr("x", function(d){
+            return path.centroid(d)[0] + levels.labelPaddingX;
+          });
+          
+          wellLabel.attr("y", function(d){
+              return  path.centroid(d)[1] + levels.labelPaddingY;
+          });      
+  
+
+        
+    });
+  
+
+  
+    levels.updateInterface();
+    d3.selectAll(".basins").style("display", "none");
+    d3.select(".basin-" + levels.currentInterval).style("display", "block");    
+  
+    d3.selectAll(".wells").style("display", "none");
+    d3.select(".well-" + levels.currentInterval).style("display", "block");   
+
+};
 */
