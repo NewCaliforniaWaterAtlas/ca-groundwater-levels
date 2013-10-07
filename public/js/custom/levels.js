@@ -69,7 +69,7 @@ levels.project = function(x) {
       return [point.x, point.y];
 };
   
-levels.projectionPath = d3.geo.path().projection(levels.project);
+levels.projectionPath = d3.geo.path().projection(levels.project).pointRadius(3);
 
 levels.aquiferClick = function(e){
   levels.gw_basin_code = e.id;
@@ -154,19 +154,24 @@ levels.loadWells = function(error, wells){
 
  
   map.on("viewreset", function reset() {
+    var wellsRendered = wellsLayer.selectAll(".well");
 
-    well.attr("d",levels.projectionPath);
+    wellsRendered.attr("d",levels.projectionPath);
     
-    wellLabel.attr("x", function(d){
+    var wellsLabelsRendered = wellsLayer.selectAll(".well-label");
+    wellsLabelsRendered.attr("x", function(d){
       return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
     });
     
-    wellLabel.attr("y", function(d){
+    wellsLabelsRendered.attr("y", function(d){
         return  levels.projectionPath.centroid(d)[1] + levels.labelPaddingY;
     });
 
     d3.selectAll(".wells").style("display", "none");
     d3.select(".well-" + levels.currentInterval).style("display", "block");   
+
+    var zoom = map.getZoom();
+    d3.select("#map").select("svg").attr("zoom", zoom);
 
 
   });
@@ -180,10 +185,12 @@ levels.showAquifers = function(error, aquifers) {
   levels.basins = topojson.feature(levels.aquifers, levels.aquifers.objects.database);
 
   var zoom = map.getZoom();
-      
+  d3.select("#map").select("svg").attr("zoom", zoom);
+
+
 
   var svg = d3.select("#map").select("svg");
-  var b = svg.append("g").attr("class", "basins").attr("zoom", zoom);
+  var b = svg.append("g").attr("class", "basins");
 
   var basinsSVG = b.append("g")
   .attr("class", "basin")
@@ -235,8 +242,9 @@ levels.showAquifers = function(error, aquifers) {
       });
 
       // Set zoom level. Interacts with CSS.
-      var zoom = map.getZoom();      
-      b.attr("zoom", zoom);
+      var zoom = map.getZoom();
+      d3.select("#map").select("svg").attr("zoom", zoom);
+
   });
 };
 
