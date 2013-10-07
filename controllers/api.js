@@ -220,13 +220,13 @@ exports.getResults = function(req,res) {
           else {
 
             Database.find(query).limit(limit).exec(function(err, results) {
-console.log(results);
+
                 if(results !== undefined) {
                 if(results.length > 1) {
                   datacube.results.push(results);
                 }
                 else {
-
+                  datacube.results.push([]);
                 }
               }
               datacube.query.dates = intervals;

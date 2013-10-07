@@ -3,9 +3,9 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '3/01/2012';
+levels.date_start = '3/01/2008';
 levels.date_end = '3/01/2013';
-levels.interval = 3;
+levels.interval = 12;
 levels.limit = 5000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
@@ -105,7 +105,7 @@ levels.loadWells = function(error, wells){
   
   levels.currentLevel = 0;
   levels.updateInterface();
-
+  console.log(wells);
   levels.wells = wells.results;
   
   levels.numberIntervals = levels.wells.length;
@@ -134,7 +134,7 @@ levels.loadWells = function(error, wells){
       .append("path")
       .attr("d", levels.projectionPath)
       .attr("class", "well")
-      .attr("well-use", function(d) { return d.properties.well_use;} );
+      .attr("well-use", function(d) { console.log(d); return d.properties.well_use;} );
   
     // @TODO needs layer.
     var wellLabel = wellsGroup.selectAll("text")
@@ -189,7 +189,7 @@ levels.loadWells = function(error, wells){
 
   });
 
- 
+   $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
 };
 
 
@@ -273,35 +273,47 @@ levels.updateInterface = function() {
   try{
     $('#slider').labeledslider("destroy");
   }
-  catch(err)
-  {
-  //Handle errors here
-  }
+  catch(err){}
 
-  labels = [];
+  levels.dateLabels = [];
   for(var i in levels.dates) {
     d = moment(levels.dates[i]).format("MM/DD/YYYY");
-    labels.push(d);
+    levels.dateLabels.push(d);
   }
-  labels.pop();
-  labels.shift();
-
-  if ((levels.numberIntervals - 1) > 0) {
+/*   levels.dateLabels.pop(); */
+/*   levels.dateLabels.shift(); */
+  
+  if ((levels.numberIntervals - 2) > 0) {
     $('#slider').labeledslider({ 
       max: levels.numberIntervals - 1, 
       tickInterval: 1,
-      tickLabels: labels,
+      tickLabels: levels.dateLabels,
       slide: function(event, ui) { 
+        console.log(event);
+        console.log(ui);
         levels.currentInterval = ui.value;
         levels.loadInterval();
       }
     }); 
   }
+  
+
+/*
+  $('.ui-slider').css('width', 100 - (levels.numberIntervals-1) - 5 + '%');
+  $('.horizontal .ui-slider-labels').css('width', 100 - (levels.numberIntervals-1) - 5 + '%');
+
+*/
+  var tickWidth = Math.round( 1 / (levels.numberIntervals-1) * 10000 ) / 100;
+
+  $('.ui-slider .ui-slider-handle').css('width', tickWidth + '%');
+$('.horizontal .ui-slider-labels').append('<div class="ui-slider-label-ticks" style="left: ' + (tickWidth + 100) + '%;"><span>' + levels.dateLabels[levels.dateLabels.length - 1 ] + '</span></div>')
+
 };
 
 levels.loadInterval = function() {
   d3.selectAll(".wells").style("display", "none");
   d3.select(".well-" + levels.currentInterval).style("display", "block");
+  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
 };
 
 /*

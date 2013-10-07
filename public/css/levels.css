@@ -117,6 +117,40 @@ path.well[well-use="Stockwatering"] {
   fill-opacity: .8;
 }
 
+.ui-corner-all {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+a.ui-slider-handle.ui-state-default,
+a.ui-slider-handle.ui-state-active,
+a.ui-slider-handle.ui-state-hover {
+  background: #a0a0a0;
+  outline: none;
+  margin-left: 0px;
+  height: 15px;
+  border: none;
+  box-shadow: 5px 5px 5px #efefef;
+}
+
+
+a.ui-slider-handle.ui-state-active {
+  background: #b5b5b5;
+}
+a.ui-slider-handle.ui-state-hover {
+  background: #b5b5b5;
+}
+
+#slider-container {
+  width: 50%;
+  margin: 10px;
+}
+#slider {
+  background: none;
+  border: none;
+}
 
 .ui-slider-label-ticks span {
   font-size: 12px;
