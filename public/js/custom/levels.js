@@ -3,16 +3,17 @@ var levels = {}, map;
 levels.address = '1400 Tenth St., Sacramento, CA, 95814';
 levels.latitude = 37.000;
 levels.longitude = -120.000;
-levels.date_start = '4/1/2010';
-levels.date_end = '6/30/2013';
-levels.interval = 12;
+levels.date_start = '3/01/2012';
+levels.date_end = '3/01/2013';
+levels.interval = 3;
 levels.limit = 5000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
-levels.labelPaddingY = 12;
+levels.labelPaddingY = 8;
 levels.currentInterval = 0;
-levels.gw_basin_code = '2-9.04'
+levels.gw_basin_code = '2-9.04';
+levels.points = [];
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
 
@@ -25,7 +26,7 @@ levels.buildMap = function() {
   // chachasikes.map-oguxg9bo
   var mapbox = 'examples.map-vyofok3q';
   
-  map = L.mapbox.map('map', mapbox).setView([levels.latitude, levels.longitude], 11);
+  map = L.mapbox.map('map', mapbox).setView([levels.latitude, levels.longitude], 8);
   
   // Make aquifer layer.
   var layer = L.geoJson(null, { style: { color: '#333', weight: 1 }});
@@ -66,6 +67,7 @@ levels.buildMap = function() {
 
 levels.project = function(x) {
       var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
+      levels.points.push(new L.LatLng(x[1], x[0]));
       return [point.x, point.y];
 };
   
@@ -74,6 +76,8 @@ levels.projectionPath = d3.geo.path().projection(levels.project).pointRadius(3);
 levels.aquiferClick = function(e){
   levels.gw_basin_code = e.id;
   console.log(e.id);
+
+
 
   d3.selectAll(".wells").remove();
   
@@ -94,7 +98,7 @@ levels.aquiferClick = function(e){
 };
 
 levels.loadWells = function(error, wells){
-
+  levels.points = [];
   
   levels.currentLevel = 0;
   levels.updateInterface();
@@ -153,13 +157,19 @@ levels.loadWells = function(error, wells){
   d3.selectAll(".wells").style("display", "none");
   d3.select(".well-" + levels.currentInterval).style("display", "block");   
 
+
+ 
+ map.fitBounds(levels.points);
+ // map.fitBounds(wellsBounds.getBounds());
+
  
   map.on("viewreset", function reset() {
-    var wellsRendered = wellsLayer.selectAll(".well");
+    
+    var wellsRendered = d3.select("#map").select("svg").selectAll(".well");
 
     wellsRendered.attr("d",levels.projectionPath);
     
-    var wellsLabelsRendered = wellsLayer.selectAll(".well-label");
+    var wellsLabelsRendered = d3.select("#map").select("svg").selectAll(".well-label");
     wellsLabelsRendered.attr("x", function(d){
       return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
     });

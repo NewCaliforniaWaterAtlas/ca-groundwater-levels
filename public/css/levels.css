@@ -3,12 +3,14 @@
   stroke: #ea8028;
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
+
 }
 
-
-path:hover {
-  fill: blue;
-  fill-opacity: .3;
+.basin path{
+  fill-opacity: 0.6;
+}
+.basin path:hover {
+  fill-opacity: 0;
 }
 
 
@@ -19,8 +21,7 @@ path:hover {
   font-size: 12px;
   margin-top: 0px;
   color: #0c0c0a;
-/*   fill: #b2570d; */
-  
+  fill-opacity: .7;
   text-anchor: middle;
 }
 
@@ -36,8 +37,7 @@ svg[zoom="7"] text.well-label {
 
 svg[zoom="8"] text.well-label,
 svg[zoom="9"] text.well-label{
-  display: block;
-  font-size: 8px;
+  display: none;
 }
 svg[zoom="10"] text.well-label,
 svg[zoom="11"] text.well-label,
@@ -85,7 +85,7 @@ svg[zoom="14"] text.basin-label {
 
 path.well {
   fill: #353535;
-/*   fill-opacity: .5; */
+  fill-opacity: .2;
   z-index: 1000;
 }
 path.well:hover {
@@ -99,18 +99,26 @@ path.well[well-use="Unknown"] {
 }
 path.well[well-use="Residential"] {
   fill: #eac928;
+  fill-opacity: .8;
 }
 path.well[well-use="Irrigation"] {
   fill: #16c116;
+  fill-opacity: .8;
+}
+path.well[well-use="Industrial"] {
+  fill: #60c8e8;
+  fill-opacity: .8;
 }
 path.well[well-use="Observation"] {
   fill: #476ad6;
+  fill-opacity: .8;
 }
 path.well[well-use="Other"] {
   fill: #606060;
 }
 path.well[well-use="Stockwatering"] {
   fill: #ad8853;
+  fill-opacity: .8;
 }
 
 
