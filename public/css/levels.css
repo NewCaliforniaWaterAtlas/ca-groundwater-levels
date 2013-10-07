@@ -6,21 +6,12 @@
 }
 
 
-path.well {
-  fill: #000000;
-  fill-opacity: .5;
-  z-index: 1000;
-}
-
 path:hover {
   fill: blue;
   fill-opacity: .3;
 }
 
-path.well:hover {
-  fill: red;
-  fill-opacity: .7;
-}
+
 
 .basins text,
 .well-label {
@@ -31,30 +22,6 @@ path.well:hover {
 /*   fill: #b2570d; */
   
   text-anchor: middle;
-}
-
-svg[zoom="1"] .well
-svg[zoom="2"] .well
-svg[zoom="3"] .well
-svg[zoom="4"] .well
-svg[zoom="5"] .well
-svg[zoom="6"] .well
-svg[zoom="7"] .well { 
-
-}
-
-svg[zoom="8"] .well
-svg[zoom="9"] .well {
-
-}
-svg[zoom="10"] .well
-svg[zoom="11"] .well
-svg[zoom="12"] .well {
-
-}
-svg[zoom="13"] .well
-svg[zoom="14"] .well { 
-
 }
 
 svg[zoom="1"] text.well-label,
@@ -115,6 +82,36 @@ svg[zoom="14"] text.basin-label {
   font-size: 16px;
 }
 
+
+path.well {
+  fill: #353535;
+/*   fill-opacity: .5; */
+  z-index: 1000;
+}
+path.well:hover {
+/*
+  fill: red;
+  fill-opacity: .7;
+*/
+}
+path.well[well-use="Unknown"] {
+  fill: #353535;
+}
+path.well[well-use="Residential"] {
+  fill: #eac928;
+}
+path.well[well-use="Irrigation"] {
+  fill: #16c116;
+}
+path.well[well-use="Observation"] {
+  fill: #476ad6;
+}
+path.well[well-use="Other"] {
+  fill: #606060;
+}
+path.well[well-use="Stockwatering"] {
+  fill: #ad8853;
+}
 
 
 .ui-slider-label-ticks span {

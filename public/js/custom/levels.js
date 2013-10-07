@@ -6,7 +6,7 @@ levels.longitude = -120.000;
 levels.date_start = '4/1/2010';
 levels.date_end = '6/30/2013';
 levels.interval = 12;
-levels.limit = 50;
+levels.limit = 5000;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
@@ -126,7 +126,8 @@ levels.loadWells = function(error, wells){
       .enter()
       .append("path")
       .attr("d", levels.projectionPath)
-      .attr("class", "well");
+      .attr("class", "well")
+      .attr("well-use", function(d) { return d.properties.well_use;} );
   
     // @TODO needs layer.
     var wellLabel = wellsGroup.selectAll("text")
