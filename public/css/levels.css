@@ -1,7 +1,13 @@
 .alert {
-  position: fixed;
-  left: 100px;
-  top: 200px;
+  position:absolute;
+  right: 100px;
+  top: 175px;
+  z-index: 2000;
+  background: #ffffff;
+  padding: 30px;
+  width: 200px;
+  height: 470px;
+  opacity: 0.8;
 }
 
 .page-header {
@@ -72,6 +78,11 @@ body { margin:0; padding:0; }
 }
 .basin path:hover {
   fill-opacity: 0;
+  stroke: #386b7f;
+  stroke-width: 2;
+  stroke-opacity: 1;
+  stroke-dasharray: 2,2;
+  stroke-linejoin: round;
 }
 
 .basins text,
@@ -208,12 +219,21 @@ a.ui-slider-handle.ui-state-hover {
   background: #b5b5b5;
 }
 
+.loading {
+  background-image:url('../images/loading_transparent.gif');
+  width: 40px;
+  height: 40px;
+  display: block;
+}
 
 #slider-container {
-  width: 70%;
+  width: 80%;
   margin: 10px;
 }
+
+.ui-slider-wrapper.horizontal,
 #slider {
+  height: 2.5em;
   background: none;
   border: none;
 }

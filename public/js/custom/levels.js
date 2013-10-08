@@ -67,6 +67,11 @@ levels.buildMap = function() {
 /*       .defer(d3.json, levels.averagesQuery) */
 /*       .defer(d3.json, levels.wellsQuery) */
       .await(levels.showAquifers);
+
+
+
+  $('div.alert').html("Showing underground aquifers in California. Click an aquifer to load groundwater levels.");
+
 };
 
 
@@ -78,12 +83,32 @@ levels.project = function(x) {
   
 levels.projectionPath = d3.geo.path().projection(levels.project).pointRadius(3);
 
+levels.loadAquiferData = function(id) {
+  var d = levels.basins.features.filter(function(d) { 
+
+  if(d.id == levels.gw_basin_code) {
+    return d;
+  } })[0];
+
+  return d.properties;
+};
+
+levels.loading = function(id) {
+  var output = '';
+  
+  output += '<div class="loading"></div> Loading 15 years of well readings for ';
+  d = levels.loadAquiferData();
+
+  output += d.GWBASIN + ", " + d.SUBNAME + " subbasin." + Math.round(d.ACRES) + " Acres."
+  return output;
+}
+
 levels.aquiferClick = function(e){
   levels.gw_basin_code_prev = levels.gw_basin_code;
   levels.gw_basin_code = e.id;
-  console.log(e.id);
 
-/*   d3.select('.basin').on("click", levels.aquiferClick); */
+  $('div.alert').html(levels.loading(e.id));
+
   d3.select('[basin-code="' + levels.gw_basin_code_prev + '"]').on("click", levels.aquiferClick);
   d3.select('[basin-code="' + levels.gw_basin_code + '"]').on("click", null);
 
@@ -151,13 +176,11 @@ levels.loadWells = function(error, wells){
         .append("svg:text")
         .text(function(d){
 
-          if(d.properties.gs_to_ws !== undefined) {
-
-
-            return Math.floor(d.properties.gs_to_ws);
-          }
-          else {
-          }
+        if(d.properties.gs_to_ws !== undefined) {
+          return Math.floor(d.properties.gs_to_ws);
+        }
+        else {
+        }
       })
       .attr("x", function(d){
           return levels.projectionPath.centroid(d)[0] + levels.labelPaddingX;
@@ -175,10 +198,7 @@ levels.loadWells = function(error, wells){
 
   map.fitBounds(levels.points);
   var zoom = map.getZoom() + 3;
-  console.log(zoom);
   map.setZoom(11);
-  // map.fitBounds(wellsBounds.getBounds());
-
  
   map.on("viewreset", function reset() {
     
@@ -204,9 +224,16 @@ levels.loadWells = function(error, wells){
 
   });
 
-  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
+
+levels.alertWellData();
+
    
   }
+};
+
+levels.alertWellData = function() {
+  var d = levels.loadAquiferData();
+  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells found from <span class='alert-date'>" + levels.dateLabels[levels.currentInterval] + " to " + levels.dateLabels[levels.currentInterval + levels.skipDates] + "</span> in " + d.GWBASIN + ", " + d.SUBNAME + " subbasin. " + Math.round(d.ACRES) + " Acres.");
 };
 
 
@@ -299,8 +326,6 @@ levels.updateInterface = function() {
     d = moment(levels.dates[i]).format("MM/YY");
     levels.dateLabels.push(d);
   }
-/*   levels.dateLabels.pop(); */
-/*   levels.dateLabels.shift(); */
   
   if ((levels.numberIntervals - 2) > 0) {
     $('#slider').labeledslider({ 
@@ -333,7 +358,7 @@ $('.horizontal .ui-slider-labels').append('<div class="ui-slider-label-ticks" st
 levels.loadInterval = function() {
   d3.selectAll(".wells").style("display", "none");
   d3.select(".well-" + levels.currentInterval).style("display", "block");
-  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
+  levels.alertWellData();
 };
 
 /*
