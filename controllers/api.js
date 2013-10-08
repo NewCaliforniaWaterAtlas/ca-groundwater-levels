@@ -31,7 +31,7 @@ exports.list = function(req, res) {
   exports.getResults(req,res);
 }
 
-exports.buildDateRange = function (interval, date_start, date_end){
+exports.buildDateRange = function (interval, date_start, date_end, skip){
 
   moment().format();
   // 1, 2, 3, 4, 6 --- / 12  intervals
@@ -56,6 +56,28 @@ exports.buildDateRange = function (interval, date_start, date_end){
   
   bDate = new Date(b.format('YYYY'), b.format('M')-1, b.format('D'))
   intervals.push(bDate);
+  
+  intervalsSkips = [];
+
+  // Skip intervals.
+/*
+  var skipper = 0;
+  for(var i = 0; i < intervals.length; i++){
+    if(skipper < skip) {
+
+        skipper++;
+        
+    }
+    else {
+      intervalsSkips.push(intervals[i]);
+      intervalsSkips.push(intervals[i+1]);
+      skipper = 0;
+    }
+  
+
+  }
+*/
+
   return intervals;
 }
 
@@ -118,6 +140,13 @@ exports.getResults = function(req,res) {
     limit = 100; // Default limit.
   }
 
+  if(req.query.skip !== undefined) {
+    skip = parseInt(req.query.skip); // interval is in number of days.
+  }
+  else {
+    skip = 1; // Default limit.
+  }
+
   // Get interval amount.
   if(req.query.interval !== undefined) {
     interval = parseInt(req.query.interval); // interval is in number of days.
@@ -146,7 +175,7 @@ exports.getResults = function(req,res) {
   
   console.log(date_start);
   console.log(date_end);
-  intervals = exports.buildDateRange(interval, date_start, date_end);
+  intervals = exports.buildDateRange(interval, date_start, date_end, skip);
   console.log(intervals);
   
   

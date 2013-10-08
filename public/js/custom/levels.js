@@ -10,7 +10,7 @@ levels.date_start = '1/01/1995';
 levels.date_end = '12/31/2012';
 
 levels.interval = 6;
-levels.limit = 700;
+levels.limit = 600;
 levels.format = 'json';
 levels.apiPath = '/api/v1?';
 levels.labelPaddingX = 8;
@@ -18,6 +18,7 @@ levels.labelPaddingY = 8;
 levels.currentInterval = 0;
 levels.gw_basin_code = '';
 levels.points = [];
+levels.skipDates = 2;
 // Geocode address.
 // http://www.gisgraphy.com/documentation/user-guide.htm#geocodingwebservice
 
@@ -91,6 +92,7 @@ levels.aquiferClick = function(e){
   levels.query = 
             'limit=' + levels.limit
             + '&interval=' + levels.interval
+            + '&skip=' + levels.skipDates
             + '&date_start=' + levels.date_start
             + '&date_end=' + levels.date_end
             + '&format=' + levels.format;
@@ -172,6 +174,9 @@ levels.loadWells = function(error, wells){
   d3.select(".well-" + levels.currentInterval).style("display", "block");   
 
   map.fitBounds(levels.points);
+  var zoom = map.getZoom() + 3;
+  console.log(zoom);
+  map.setZoom(11);
   // map.fitBounds(wellsBounds.getBounds());
 
  
@@ -197,7 +202,6 @@ levels.loadWells = function(error, wells){
     var zoom = map.getZoom();
     d3.select("#map").select("svg").attr("zoom", zoom);
 
-
   });
 
   $('div.alert').html(levels.wells[levels.currentInterval].length + " wells");
@@ -217,15 +221,6 @@ levels.showAquifers = function(error, aquifers) {
 
   var svg = d3.select("#map").select("svg");
   var b = svg.append("g").attr("class", "basins");
-
-  var basinsSVG = b.append("g")
-  .attr("class", "basin")
-  .selectAll("path")
-  .data(levels.basins.features)
-  .enter().append("path")
-  .attr("d", levels.projectionPath)
-  .attr("basin-code", function(d){ return d.id})
-  .on("click", levels.aquiferClick); 
 
   var basinLabel = b.selectAll("text")
       .data(levels.basins.features)
@@ -251,6 +246,17 @@ levels.showAquifers = function(error, aquifers) {
     .attr("y", function(d){
         return  levels.projectionPath.centroid(d)[1];
     });
+
+  var basinsSVG = b.append("g")
+  .attr("class", "basin")
+  .selectAll("path")
+  .data(levels.basins.features)
+  .enter().append("path")
+  .attr("d", levels.projectionPath)
+  .attr("basin-code", function(d){ return d.id})
+  .on("click", levels.aquiferClick); 
+
+
 
 
   
@@ -300,7 +306,7 @@ levels.updateInterface = function() {
     $('#slider').labeledslider({ 
       max: levels.numberIntervals - 1, 
       tickInterval: 1,
-      step: 2,
+      step: levels.skipDates,
       tickLabels: levels.dateLabels,
       slide: function(event, ui) { 
         console.log(event);

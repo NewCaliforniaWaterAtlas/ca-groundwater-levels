@@ -1,19 +1,78 @@
+.alert {
+  position: fixed;
+  left: 100px;
+  top: 200px;
+}
+
+.page-header {
+  padding-bottom: 0;
+  margin: 0px 0 0px;
+}
+
+
+input.date-start {
+  width: 150px;
+}
+
+input.date-end {
+  width: 150px;
+  float: right;
+  right: 0;
+}
+
+.slider {
+  float: left;
+  width:500px;
+}
+
+
+.menu {
+  float: right;
+  margin-right: 100px;
+}
+
+.search {
+  margin: 5px;
+}
+
+.menu li {
+  float: left;
+  list-style: none;
+  margin-right: 10px;
+}
+
+body { margin:0; padding:0; }
+
+.legend {
+  width: 250px;
+  height: 220px;
+  position: relative;
+  top: -250px;
+  margin: 0 0 8px 8px;
+  background: #ffffff;
+  z-index: 1000;
+}
+
+#map { 
+  position: relative;
+  height: 500px;
+}
+
+
 .basin { 
   fill: #ededed;
   stroke: #ea8028;
   stroke-dasharray: 2,2;
   stroke-linejoin: round;
+  z-index: 1100;
 
 }
-
 .basin path{
   fill-opacity: 0.6;
 }
 .basin path:hover {
   fill-opacity: 0;
 }
-
-
 
 .basins text,
 .well-label {
@@ -23,6 +82,15 @@
   color: #0c0c0a;
   fill-opacity: .7;
   text-anchor: middle;
+}
+
+.basin-label {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 svg[zoom="1"] text.well-label,
@@ -52,8 +120,6 @@ svg[zoom="14"] text.well-label {
   font-size: 12px;
 }
 
-
-
 svg[zoom="1"] text.basin-label,
 svg[zoom="2"] text.basin-label,
 svg[zoom="3"] text.basin-label,
@@ -81,7 +147,6 @@ svg[zoom="14"] text.basin-label {
   display: block;
   font-size: 16px;
 }
-
 
 path.well {
   fill: #353535;
@@ -145,7 +210,7 @@ a.ui-slider-handle.ui-state-hover {
 
 
 #slider-container {
-  width: 60%;
+  width: 70%;
   margin: 10px;
 }
 #slider {
