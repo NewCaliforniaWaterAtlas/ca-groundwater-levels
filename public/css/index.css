@@ -42,7 +42,8 @@ h2 {
   font-family: 'Questrial', sans-serif;
   font-size: 1.30em;
   line-height: 1.30em;
-  background-color: #dbd7ca;
+/*   background-color: #dbd7ca; */
+  background-color: #edeae2;
   padding: 6px;
   padding-left: 12px;
   margin: 5px 0;
@@ -166,12 +167,17 @@ h2.bar {
 }
 
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus {
-  background-color: #b7b7ad;
+  background-color: #d8a271;
+
   border-left: solid 3px #545348;
 }
 
 ul.nav-tabs>li>a.btn.btn-primary.btn-lg{
   text-align: left;
+}
+
+ul.nav-tabs>li.active>a, ul.nav-tabs>li.active>a:hover, ul.nav-tabs>li.active>a:focus {
+  color: #fffff;
 }
 
 .carousel-control.left {
