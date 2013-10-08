@@ -102,6 +102,7 @@ h1.title {
   margin-right: -15px;
 }*/
 
+.carousel-caption,
 h2.bar-title {
   font-family: 'Rosario', sans-serif;  
   font-size: 1.5em;
@@ -172,3 +173,30 @@ h2.bar {
 ul.nav-tabs>li>a.btn.btn-primary.btn-lg{
   text-align: left;
 }
+
+.carousel-control.left {
+  background-image: linear-gradient(to right,rgba(0, 0, 0, 0.1) 0,rgba(0,0,0,0.0001) 100%);
+}
+.carousel-control.right {
+  background-image: linear-gradient(to right,rgba(0,0,0,0.0001) 0,rgba(0,0,0,0.1) 100%);
+}
+.carousel-caption {
+  left: 0;
+  right: 0;
+  text-shadow: none;
+  color: #0c0c0a;
+  text-align: left;
+}
+
+ol.carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  right: 10%;
+  z-index: 15;
+  width: 20%;
+  padding-left: 0;
+  margin-left: 35%;
+  text-align: center;
+  list-style: none;
+}
+

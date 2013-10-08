@@ -68,7 +68,7 @@ levels.buildMap = function() {
 /*       .defer(d3.json, levels.wellsQuery) */
       .await(levels.showAquifers);
 
-  $('div.alert').html("Showing underground aquifers in California. Click an aquifer to load groundwater levels.");
+  $('div.alert').html("<strong>Showing underground aquifers in California.</strong><br /><em>Click an aquifer to load groundwater levels.</em>");
 
 };
 
@@ -108,10 +108,10 @@ levels.loadAquiferData = function(id) {
 levels.loading = function(id) {
   var output = '';
   
-  output += '<div class="loading"></div> Loading 15 years of well readings for ';
+  output += '<div class="loading"></div> <em>Loading 15 years of well readings.</em> <br />';
   d = levels.loadAquiferData();
 
-  output += d.GWBASIN + ", " + d.SUBNAME + " subbasin." + Math.round(d.ACRES) + " Acres."
+  output += "Groundwater basin: <span class='basin-name'>" + d.GWBASIN + "</span> <br /> Sub Basin: <span class='basin-name'>" + d.SUBNAME + "</span> <br /> Acres: " + Math.round(d.ACRES);
   return output;
 }
 
@@ -252,8 +252,20 @@ levels.alertWellData();
 };
 
 levels.alertWellData = function() {
-  var d = levels.loadAquiferData();
-  $('div.alert').html(levels.wells[levels.currentInterval].length + " wells found from <span class='alert-date'>" + levels.dateLabels[levels.currentInterval] + " to " + levels.dateLabels[levels.currentInterval + levels.skipDates] + "</span> in " + d.GWBASIN + ", " + d.SUBNAME + " subbasin. " + Math.round(d.ACRES) + " Acres.");
+  
+  d = levels.loadAquiferData();
+
+  var output = "";
+  
+  
+  output += "<strong>" + levels.wells[levels.currentInterval].length + " wells</strong> found from <strong class='alert-date'>" + levels.dateLabels[levels.currentInterval] + " to " + levels.dateLabels[levels.currentInterval + levels.skipDates] + "</strong>";
+ 
+  output += "Groundwater basin: <span class='basin-name'>" + d.GWBASIN + "</span> <br /> Sub Basin: <span class='basin-name'>" + d.SUBNAME + "</span> <br /> Acres: " + Math.round(d.ACRES);
+ 
+  
+  $('div.alert').html(output);
+  
+  
 };
 
 

@@ -1,12 +1,12 @@
 .alert {
   position:absolute;
   right: 100px;
-  top: 175px;
+  top: 190px;
   z-index: 2000;
   background: #ffffff;
   padding: 30px;
   width: 200px;
-  height: 470px;
+  height: 450px;
   opacity: 0.8;
 }
 
@@ -15,6 +15,9 @@
   margin: 0px 0 0px;
 }
 
+.basin-name {
+ 
+}
 
 input.date-start {
   width: 150px;
