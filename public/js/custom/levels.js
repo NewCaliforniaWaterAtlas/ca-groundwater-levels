@@ -68,12 +68,24 @@ levels.buildMap = function() {
 /*       .defer(d3.json, levels.wellsQuery) */
       .await(levels.showAquifers);
 
-
-
   $('div.alert').html("Showing underground aquifers in California. Click an aquifer to load groundwater levels.");
 
 };
 
+levels.loadAquiferURL = function() {
+
+
+  // Javascript to enable link to tab
+  var url = document.location.toString();
+  if (url.match('#')) {
+    levels.gw_basin_code_prev = url.split('#')[1];
+    levels.gw_basin_code = url.split('#')[1];
+    var e = {};
+    e.id = url.split('#')[1];
+    levels.aquiferClick(e);
+  } 
+
+};
 
 levels.project = function(x) {
       var point = map.latLngToLayerPoint(new L.LatLng(x[1], x[0]));
@@ -127,7 +139,15 @@ levels.aquiferClick = function(e){
 
   queue()
       .defer(d3.json, levels.subbasinQuery)
-      .await(levels.loadWells); 
+      .await(levels.loadWells);
+      
+      
+  // Set address bar.
+  
+
+
+  window.location.hash = e.id;
+
 
 };
 
@@ -247,9 +267,19 @@ levels.showAquifers = function(error, aquifers) {
 
 
   var svg = d3.select("#map").select("svg");
-  var b = svg.append("g").attr("class", "basins");
+  var basinGroup = svg.append("g").attr("class", "basins");
+  var basinLabelGroup = svg.append("g").attr("class", "basins basinsLabels");
 
-  var basinLabel = b.selectAll("text")
+  var basinsSVG = basinGroup.append("g")
+  .attr("class", "basin")
+  .selectAll("path")
+  .data(levels.basins.features)
+  .enter().append("path")
+  .attr("d", levels.projectionPath)
+  .attr("basin-code", function(d){ return d.id})
+  .on("click", levels.aquiferClick); 
+
+  var basinLabel = basinLabelGroup.selectAll("text")
       .data(levels.basins.features)
       .enter()
       .append("svg:text")
@@ -274,20 +304,6 @@ levels.showAquifers = function(error, aquifers) {
         return  levels.projectionPath.centroid(d)[1];
     });
 
-  var basinsSVG = b.append("g")
-  .attr("class", "basin")
-  .selectAll("path")
-  .data(levels.basins.features)
-  .enter().append("path")
-  .attr("d", levels.projectionPath)
-  .attr("basin-code", function(d){ return d.id})
-  .on("click", levels.aquiferClick); 
-
-
-
-
-  
-
   map.on("viewreset", function reset() {
 
       basinsSVG.attr("d",levels.projectionPath);
@@ -305,6 +321,8 @@ levels.showAquifers = function(error, aquifers) {
       d3.select("#map").select("svg").attr("zoom", zoom);
 
   });
+  
+  levels.loadAquiferURL();
 };
 
 levels.setupInterface = function() {

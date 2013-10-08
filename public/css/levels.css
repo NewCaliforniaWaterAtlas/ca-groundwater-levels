@@ -90,10 +90,17 @@ body { margin:0; padding:0; }
   font-family: 'Questrial', sans-serif;
   font-size: 12px;
   margin-top: 0px;
-  color: #0c0c0a;
-  fill-opacity: .7;
+  fill: #0c0c0a;
+  fill-opacity: 0.9;
   text-anchor: middle;
 }
+
+
+.basinsLabels text {
+  font-size: 14px;  
+  fill: #87522d;
+}
+
 
 .basin-label {
   -webkit-touch-callout: none;
@@ -144,7 +151,7 @@ svg[zoom="7"] text.basin-label {
 svg[zoom="8"] text.basin-label,
 svg[zoom="9"] text.basin-label{
   display: block;
-  font-size: 8px;
+  font-size: 10px;
 }
 svg[zoom="10"] text.basin-label,
 svg[zoom="11"] text.basin-label,
@@ -156,7 +163,7 @@ svg[zoom="12"] text.basin-label {
 svg[zoom="13"] text.basin-label,
 svg[zoom="14"] text.basin-label { 
   display: block;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 path.well {
