@@ -86,6 +86,20 @@ h3,h4,h5,h6 {
   height: 173px;
 }
 
+.ncwa-logo {
+  position: absolute;
+}
+
+.ncwa-logo img {
+  width: auto;
+  height: 100px;
+}
+
+.title-wrap {
+  margin-left: 110px;
+  margin-top: 35px;
+}
+
 ul.nav-tabs {
   border-bottom: none;
 }
@@ -180,6 +194,10 @@ ul.nav-tabs>li.active>a, ul.nav-tabs>li.active>a:hover, ul.nav-tabs>li.active>a:
   color: #fffff;
 }
 
+.carousel {
+  margin-top: 25px;
+}
+
 .carousel-control.left {
   background-image: linear-gradient(to right,rgba(0, 0, 0, 0.1) 0,rgba(0,0,0,0.0001) 100%);
 }
@@ -203,7 +221,8 @@ ul.nav-tabs>li.active>a, ul.nav-tabs>li.active>a:hover, ul.nav-tabs>li.active>a:
 
 ol.carousel-indicators {
   position: absolute;
-  bottom: 20px;
+  /*bottom: 20px;*/
+  top: 12px;
   right: 10%;
   z-index: 15;
   width: 20%;
