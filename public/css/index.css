@@ -187,11 +187,18 @@ ul.nav-tabs>li.active>a, ul.nav-tabs>li.active>a:hover, ul.nav-tabs>li.active>a:
   background-image: linear-gradient(to right,rgba(0,0,0,0.0001) 0,rgba(0,0,0,0.1) 100%);
 }
 .carousel-caption {
+  position: absolute;
+  top: 0;
   left: 0;
   right: 0;
+  height: 48px;
   text-shadow: none;
   color: #0c0c0a;
   text-align: left;
+}
+
+.carousel-inner>.item>a>img {
+  padding-top: 48px;
 }
 
 ol.carousel-indicators {
