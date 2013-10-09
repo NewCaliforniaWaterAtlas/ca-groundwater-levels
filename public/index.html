@@ -41,7 +41,7 @@
           <!-- Indicators -->
           <ol class="carousel-indicators">
             <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-            <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+<!--             <li data-target="#carousel-example-generic" data-slide-to="1"></li> -->
 <!--             <li data-target="#carousel-example-generic" data-slide-to="2"></li> -->
           </ol>
         
@@ -56,12 +56,14 @@
               </a>
             </div>
         
+<!--
             <div class="item">
               <a href="/aquifers"><img class="img-responsive" src="http://placehold.it/1200x500" alt="Aquifers">
               <div class="carousel-caption">
                 Where are aquifers in California?
               </div></a>
-            </div><!-- end .item -->
+            </div>
+--><!-- end .item -->
         
 <!--
             <div class="item">
@@ -103,7 +105,7 @@
         
         <div class="row">
           <div class="col-md-6">
-            <img class="img-responsive" src="http://placehold.it/600x400" alt="Understand Groundwater">
+            <img class="img-responsive" src="images/groundwater-monitoring-well-resized.png" alt="Understand Groundwater">
           </div>
           
           <div class="col-md-6">
@@ -119,11 +121,12 @@
                   <li>The depth of the water table varies over time because of natural underground flows as well as human pumping and usage of groundwater for agriculture and household use.</li>
                 </ul>
               </div>
-              <p class="read-more"><a href="#">read more...</a></p>
+              <p class="read-more"><a href="#">Read more...</a></p>
             </div>
           </div>
         </div><!-- end row -->
 
+<!--
         <div class="row row-break">
           <div class="col-md-6">
             <img class="img-responsive" src="http://placehold.it/600x400" alt="Aquifers Poster">
@@ -135,17 +138,18 @@
               <p>Valleys and Aquifers of California Order $25. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
             </div>
           </div>
-        </div><!-- end .row -->
+        </div>
+--><!-- end .row -->
 
         <div class="row row-break">
           <div class="col-md-6">
-            <img class="img-responsive" src="http://placehold.it/600x400" alt="Aquifers Poster">
+            <img class="img-responsive" src="images/unfit_water.png" alt="Water unfit for human consumption">
           </div>
           
           <div class="col-md-6">
             <div class="teaser-text-fade lead">
               <h3>Why this data matters</h3>
-              <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
+              <p>As groundwater levels change throughout the state, we need to be able to understand more precisely how lower groundwater levels effect communities throughout the state.</p>
             </div>
           </div>
         </div><!-- end .row -->
@@ -182,10 +186,10 @@
           <div class="tab-pane" id="api-download">
             <div class="teaser-text-fade lead">
               <h3>API | Bulk Download</h3>
-              <p>[Endpoint: http://api.statewater.org/ca/watertable/v1] (parameters)
-                [MongoDB: http://dropbox.com/linky-linky], CSV, GeoJSON
+              <p>[Endpoint: http://ca-groundwater-levels.statewater.org/api/v1/] (parameters)
+                [MongoDB: https://www.dropbox.com/home/data/data-groundwater-levels/mongodb/dump], CSV, GeoJSON
                     
-                Technical: 30 years of CASGEM groundwater elevation level data, improved for use with modern web technologies. Intended primaryly for exploratory visualizations. Updated quarterly. Last updated July 2013.</p>
+                Technical: 30 years of CASGEM groundwater elevation level data, improved for use with modern web technologies. Intended primarily for exploratory visualizations. Updated quarterly. Last updated July 2013.</p>
             </div>
           </div><!-- end .tab-pane -->  
     
@@ -198,13 +202,14 @@
           <div class="tab-pane" id="api-about">
             <div class="teaser-text-fade lead">
               <h3>About the Dataset</h3>
-              <p>What is being measured
+              <h4>What is being measured</h4>>
                 (repurpose / shorten from blog posts)
                 Fields
                 Methods
                 [Data cleanup scripts]
                 Original Data Source
-                Roadmap</p>
+                Roadmap
+                </p>
               <p>[Disclaimer | #disclaimer]</p>
             </div><!-- end teaser-text-fade -->
           </div><!-- end .tab-pane -->
