@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>New California Water Atlas: California Groundwater Levels</title>
+    <title>New California Water Atlas: California Groundwater</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -32,10 +32,10 @@
     <div class="container">
     
       <div class="row row-group">
-        <div class="ncwa-logo"><a href="http://ca.statewater.org"><img class="img-responsive" src="images/bio-boundaries.png" alt="New California Water Atlas"></a></div>
+<!--         <div class="ncwa-logo"><a href="http://ca.statewater.org"><img class="img-responsive" src="images/bio-boundaries.png" alt="New California Water Atlas"></a></div> -->
         <div class="title-wrap">
-          <h1 class="title">California Water Table</h1>
-          <h2 class="sub-title">Ground Water Levels in California</h2>
+          <h1 class="title">California Groundwater Levels</h1>
+          <h2 class="sub-title">Where are our groundwater aquifers? What is the water level?</h2>
         </div>
         
 <!--         <h2 class="bar-title">What is the level of the water table?</h2> -->
@@ -97,9 +97,8 @@
           <li><a href="#contribute">Contribute</a></li>
         </ul>
         <div class="col-md-6">
-          <p class="lead">Groundwater is a natural resource.
-          Check out the state of our water reserves.
-          Use data to report on groundwater health.</p>
+          <p class="lead">Groundwater is a natural resource shared by Californians. See groundwater locations. Get groundwater data.
+          </p>
         </div>
       </div><!-- end .row-group -->
     
@@ -116,12 +115,11 @@
               <h3>Groundwater Basics</h3>
               <div class="teaser-text">
                 <ul>
-                  <li>Groundwater aquifers supply water to areas without streams and reservoirs, and is relied upon in time of drought.</li>
-                  <li>Groundwater is vital to the health and industry of our great state.</li>
-                  <li>Underground water exists mainly in gravelly deposits in the lowest valleys in the state.</li>
+                  <li>Groundwater aquifers supply water to areas without streams and reservoirs, and is relied upon in times of drought.</li>
+                  <li>Groundwater is vital to the health and industry of California.</li>
+                  <li>Most California groundwater exists in gravelly deposits in the valleys of the state.</li>
                   <li>The water table is the top surface of water underground.</li>
-                  <li>If you were to look in a well, the water table would be the level of the water and how far below the surface it is.</li>
-                  <li>The depth of the water table varies over time because of natural underground flows as well as human pumping and usage of groundwater for agriculture and household use.</li>
+                  <li>The depth of the water table varies over time because of natural underground flows as well as human pumping and usage of groundwater for agriculture and other uses.</li>
                 </ul>
               </div>
               <p class="read-more"><a href="#">Read more...</a></p>
@@ -138,7 +136,7 @@
           <div class="col-md-6">
             <div class="teaser-text-fade lead">
               <h3>Poster</h3>
-              <p>Valleys and Aquifers of California Order $25. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
+              <p>Valleys and Aquifers of California Order.</p>
             </div>
           </div>
         </div>
@@ -173,13 +171,14 @@
             <div class="teaser-text-fade lead">
               <div class="teaser-text">
                 <h3>Introduction</h3>
-                <p>The California Water Table data contains 30 years of underground water table level readings from scientific research wells across the state. Some data is collected by the state, other data is collected by individuals.</p>
+                <p>The California Groundwater Levels data includes 30 years of underground water table level readings from wells across the state. Some data is collected by the state, other data is collected voluntarily individuals.</p>
                     
                 <h3>Data Stats</h3>
                 <ul>
                   <li>56 counties</li>
-                  <li>18996 research wells measuring the top position (depth) of groundwater</li>
-                  <li>570,000+ measurements</li>
+                  <li>515 Aquifer Subbasins</li>
+                  <li>18996 rwells measuring the distance from the ground surface to water surface.</li>
+                  <li>570,000+ datapoints</li>
                 </ul>
               </div>
               <p class="read-more"><a href="#">read more...</a></p>
@@ -188,17 +187,83 @@
     
           <div class="tab-pane" id="api-download">
             <div class="teaser-text-fade lead">
-              <h3>API | Bulk Download</h3>
-              <p>[Endpoint: http://ca-groundwater-levels.statewater.org/api/v1/] (parameters)
-                [MongoDB: https://www.dropbox.com/home/data/data-groundwater-levels/mongodb/dump], CSV, GeoJSON
+              <div class="teaser-text">
+              <h3>API</h3>
+              <dl>
+                <dt>Endpoint</dt><dd>http://ca-groundwater-levels.statewater.org/api/v1/</dd>
+                <dt>date_start=1/1/1983</dt><dd>Start date format M/D/YYYY</dd>
+                <dt>date_end=6/30/2013</dt><dd>End date format M/D/YYYY</dd>
+                <dt>gw_basin_code=5-22.10</dt><dd>Bulletin 118 Groundwater Basin Code</dd>
+                <dt>hydrologic_unit</dt><dd>Watershed</dd>
+                <dt>interval=18</dt><dd>Number of months for each chunk of well readings</dd>
+                <dt>latitude=37.1100</dt><dd>Latitude, decimal</dd>
+                <dt>longitude=122.1001</dt><dd>Longitude, decimal</dd>
+                <dt>limit=500</dt><dd>Maximum number of records per interval. Not rate limited during beta phase, but eventually will be.</dd>
+                <dt>averages=true</dt><dd>Return averages</dd>
+                <dt>format=json</dt><dd>json or csv. Defaults to json, specify csv to get csv results.</dd>
+              </dl>
+              
+              <h3>Bulk Download</h3>
+              <p>MongoDB: <a href="https://www.dropbox.com/home/data/data-groundwater-levels/mongodb/dump">Download</a> from Dropbox</p>
                     
-                Technical: 30 years of CASGEM groundwater elevation level data, improved for use with modern web technologies. Intended primarily for exploratory visualizations. Updated quarterly. Last updated July 2013.</p>
+              <p>Technical: 30 years of CASGEM groundwater elevation level data, improved for use with modern web technologies. Updated quarterly. Last updated July 2013.</p>
             </div>
-          </div><!-- end .tab-pane -->  
+            <p class="read-more"><a href="#">read more...</a></p>
+            </div><!-- end .teaser-text-fade -->
+          </div><!-- end .tab-pane -->
     
           <div class="tab-pane" id="api-documentation">
             <div class="teaser-text-fade lead">
+              <div class="teaser-text">
               <h3>API Documentation</h3>
+              <blockquote><pre>
+{
+  "_id" : ObjectId("523f3cc2fc58885a6ab609ea"),
+  "geometry" : {
+    "type" : "Point",
+    "coordinates" : [
+            -121.9869,
+            37.5259
+    ]
+  },
+  "type" : "Feature",
+  "id" : "375259N1219869W001",
+  "properties" : {
+    "collecting" : "Alameda County Water District",
+    "hydrologic_region" : "San Francisco Bay",
+    "measurement_accuracy" : "0.1 Ft",
+    "filetime" : "2013-09-18 13:29:55",
+    "month" : "1",
+    "county" : "Alameda",
+    "isodate" : ISODate("2011-01-04T00:00:00Z"),
+    "comments" : "CASGEM",
+    "year" : "2011",
+    "gs_to_ws" : 35.9,
+    "no_measurement" : "",
+    "reading_ws" : 0,
+    "gw_basin_name" : "Niles Cone",
+    "measurement_method" : "ES - Electric sounder measurement",
+    "filename" : "Alameda_06.21.1983-06.21.2013.csv",
+    "rp_elevation" : 37,
+    "rp_to_ws" : 35.9,
+    "military_time_pst" : "00:00",
+    "questionable_measurement" : "",
+    "gs_elevation" : 37,
+    "date" : "1/4/2011",
+    "day" : "4",
+    "reading_rp" : 35.9,
+    "wse" : 1.1,
+    "well" : "W001",
+    "gw_basin_code" : "2-9.01",
+    "well_use" : "Observation",
+    "total_well_depth" : 340,
+    "local_well_number" : "5S/1W-05H004"
+  }
+}
+              </pre></blockquote>
+
+            </div><!-- end .teaser-text-fade -->
+            <p class="read-more"><a href="#">read more...</a></p>
             </div>
           </div><!-- end .tab-pane -->  
     
@@ -215,6 +280,7 @@
                 </p>
               <p>[Disclaimer | #disclaimer]</p>
             </div><!-- end teaser-text-fade -->
+
           </div><!-- end .tab-pane -->
         </div><!-- end .tab-content -->
       </div><!-- end .row -->

@@ -53,6 +53,16 @@ h2 {
   color: #0c0c0a;
 }
 
+
+dt {
+  font-family: 'Rosario', sans-serif;
+  font-weight: bold;
+}
+
+dd {
+  font-family: 'Questrial', sans-serif;
+}
+
 .nav > li > a:hover {
   border: none;
   border-color: none;
@@ -96,7 +106,7 @@ h3,h4,h5,h6 {
 }
 
 .title-wrap {
-  margin-left: 110px;
+  margin-left: 0px;
   margin-top: 35px;
 }
 
