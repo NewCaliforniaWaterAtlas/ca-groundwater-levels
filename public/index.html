@@ -163,7 +163,7 @@
           <li><a href="#api-intro" data-toggle="tab">Introduction</a></li>
           <li><a href="#api-download" data-toggle="tab">API | Bulk Download</a></li>
           <li><a href="#api-documentation" data-toggle="tab">Documentation</a></li>
-          <li><a href="#api-about" data-toggle="tab">About the dataset</a></li>
+<!--           <li><a href="#api-about" data-toggle="tab">About the dataset</a></li> -->
         </ul>
     
         <div class="tab-content col-md-6">
@@ -267,29 +267,25 @@
             </div>
           </div><!-- end .tab-pane -->  
     
+<!--
           <div class="tab-pane" id="api-about">
             <div class="teaser-text-fade lead">
               <h3>About the Dataset</h3>
-              <h4>What is being measured</h4>>
-                (repurpose / shorten from blog posts)
-                Fields
-                Methods
-                [Data cleanup scripts]
-                Original Data Source
-                Roadmap
-                </p>
-              <p>[Disclaimer | #disclaimer]</p>
-            </div><!-- end teaser-text-fade -->
+              <p>The <a href="http://www.water.ca.gov/groundwater/casgem/">CASGEM</a> dataset </p>
 
-          </div><!-- end .tab-pane -->
-        </div><!-- end .tab-content -->
+
+
+            </div>
+          </div>
+-->
+        </div>
       </div><!-- end .row -->
     
       <div class="row  row-group">
         <h2 class="bar-title">How to Use the Data</h2>
     
         <div class="teaser-text lead">
-          <p>This data is meant to support journalists, advocates, researchers and governments to understand and explain groundwater issues more effectively to a broad audience. Publishing this data is just the first step in transforming how we communicate about water. We invite you to lend your talents to this initiative to make California’s water system easier for everyone to understand.</p>
+          <p class="col-md-6">This data is meant to support journalists, advocates, researchers and governments to understand and explain groundwater issues more effectively to a broad audience. Publishing this data is just the first step in transforming how we communicate about water. We invite you to lend your talents to this initiative to make California’s water system easier for everyone to understand.</p>
         </div>
     
         <ul class="nav nav-tabs nav-stacked col-md-6">
@@ -303,24 +299,31 @@
           <div class="tab-pane active" id="use-examples">
             <div class="teaser-text-fade lead">
               <h3>Examples</h3>
-              <p>Show the change in groundwater over time based on usage
-              Act as base layer for visualizations of groundwater quality
-              Investigate groundwater level changes in high-use areas
-              Demonstrate vulnerable aquifers</p>
+              <ul>
+                <li>Show the change in groundwater over time based on usage</li>
+                <li>Act as base layer for visualizations of groundwater quality</li>
+                <li>Investigate groundwater level changes in high-use areas</li>
+                <li>Demonstrate vulnerable aquifers</li>
+              </ul>
             </div>
           </div><!-- end .tab-pane -->
           
           <div class="tab-pane" id="use-projects">
             <div class="teaser-text-fade lead">
               <h3>Current projects</h3>
-              <p>Aquifers of California [3 photos]
-                California Water Table [3 photos]
-                Groundwater is Pasos Robles [maybe?]
-                […]
+                
+                <h4>Aquifers of California</h4>
+                <h4>California Water Table</h4>
+
+              <h3>Future projects</h3>
+                <h4>Groundwater Visualization Kit for Journalists</h4>
+                <h4>Groundwater is Pasos Robles [maybe?]</h4>
+
                   
-                Citizen Questions
+              <h3>Citizen Questions</h3>
+                [ Flickr set]
                 [People’s questions about groundwater]
-                We held a participatory design workshop at [Stamen | http://stamen.com] and invited participants to ask their questions about groundwater. Here is the list. [3 photos]
+                We held a <a href="http://ca.statewater.org/content/groundwater-partcipatory-design-worknight-812013-stamens-maptimesf">participatory design workshop</a> at <a href="http://stamen.com">Stamen</a> and invited participants to ask their questions about groundwater. Here is the list. [3 photos]
                 What do you want to know or see about groundwater?</p>
             </div>
           </div><!-- end .tab-pane -->
@@ -329,22 +332,23 @@
             <div class="teaser-text-fade lead">
               <h3>Related datasets</h3>
               <p>[Wish List - What else could use use and why? ]
-                    
-                Aquifers [github]
-                Superfund sites [link]
-                California Fracking [link github, fracktracker page]
-                Vulnerable Aquifers [link github]
-                Cities [link mapbox]
-                Water Quality [link to page on blog]
-                Dry Wells [link to crowdsourcing project - or simple form?]
-                GRACE Satellite  [link]
-                Permeable land surface Infrared (Modis // other) [link]
-                Rivers [link NHD]
-                Precipitation [caladapt]
-                DEM [link github/dropbox?]
-                Groundwater pumping electrical bills/reports [project idea]
-                Active Legislation -- Active Bills about groundwater [openstates? maplight?]
-                Organizations working on groundwater issues [list? get listed? googledoc]</p>
+                <ul>
+                  <li>Aquifers [github]</li>
+                  <li>Superfund sites [link]</li>
+                  <li>California Fracking [link github, fracktracker page]</li>
+                  <li>Vulnerable Aquifers [link github]</li>
+                  <li>Cities [link mapbox]</li>
+                  <li>Water Quality [link to page on blog]</li>
+                  <li>Dry Wells [link to crowdsourcing project - or simple form?]</li>
+                  <li>GRACE Satellite  [link]</li>
+                  <li>Permeable land surface Infrared (Modis // other) [link]</li>
+                  <li>Rivers [link NHD]</li>
+                  <li>Precipitation [caladapt]</li>
+                  <li>DEM [link github/dropbox?]</li>
+                  <li>Groundwater pumping electrical bills/reports [project idea]</li>
+                  <li>Active Legislation -- Active Bills about groundwater [openstates? maplight?]</li>
+                  <li>Organizations working on groundwater issues [list? get listed? googledoc]</li>
+                </ul>
             </div>
           </div><!-- end .tab-pane -->
           
@@ -352,15 +356,16 @@
             <div class="teaser-text-fade lead">
               <h3>Helpful technology</h3>
               <p>We surveyed a number of mapping and visualization tools which can work with the water table data.
-                Mapbox
-                Tilemill
-                Google Fusion Tables
-                ESRI ArcGIS ArcHydro
-                QGIS
-                CartoDB
-                Mongo
-                Crossfilter
-                Cubism
+                <h4>Mapbox</h4>
+                <h4>Tilemill</h4>
+                <h4>Google Fusion Tables</h4>
+                <h4>ESRI ArcGIS ArcHydro</h4>
+                <h4>QGIS</h4>
+                <h4>CartoDB</h4>
+                <h4>Mongo</h4>
+                <h4>Crossfilter</h4>
+                <h4>Cubism</h4>
+                
               </p>
             </div>
           </div><!-- end .tab-pane -->
